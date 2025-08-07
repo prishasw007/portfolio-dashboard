@@ -17,4 +17,5 @@ app.use('/api/Projects', require('./routes/Projects'));
 app.use('/api/AboutMe', require('./routes/AboutMe'));
 app.use('/api/ContactMessages', require('./routes/ContactMessages'));
 app.use('/api/AccountSettings',require('./routes/AccountSettings'))
+app.use('/api/Auth', require('./routes/Auth'));
 app.listen(5000, () => console.log('🚀 Server running on port 5000'));
