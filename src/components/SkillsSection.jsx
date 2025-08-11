@@ -13,52 +13,42 @@ import {
   MenuItem,
   OutlinedInput,
 } from "@mui/material";
+import * as FaIcons from "react-icons/fa";
+import * as SiIcons from "react-icons/si";
+import * as MdIcons from "react-icons/md";
+import * as IoIcons from "react-icons/io";
+import * as GiIcons from "react-icons/gi";
+import * as AiIcons from "react-icons/ai";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const importIcon = async (iconName) => {
-  if (!iconName || iconName.length < 2) return null;
+const getIconComponent = (iconName) => {
+  if (!iconName) return null;
+
   const prefix = iconName.slice(0, 2).toLowerCase();
 
-  let pkg;
   switch (prefix) {
     case "fa":
-      pkg = await import("react-icons/fa");
-      break;
+      return FaIcons[iconName];
     case "si":
-      pkg = await import("react-icons/si");
-      break;
+      return SiIcons[iconName];
     case "md":
-      pkg = await import("react-icons/md");
-      break;
+      return MdIcons[iconName];
     case "io":
-      pkg = await import("react-icons/io");
-      break;
+      return IoIcons[iconName];
     case "gi":
-      pkg = await import("react-icons/gi");
-      break;
+      return GiIcons[iconName];
     case "ai":
-      pkg = await import("react-icons/ai");
-      break;
+      return AiIcons[iconName];
     default:
       return null;
   }
-  return pkg[iconName] || null;
 };
 
 const IconLoader = ({ iconName }) => {
-  const [IconComponent, setIconComponent] = useState(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    importIcon(iconName).then((component) => {
-      if (isMounted) setIconComponent(() => component);
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, [iconName]);
+  const IconComponent = getIconComponent(iconName);
 
   if (!IconComponent) return null;
+
   return <IconComponent size={30} color="#555" />;
 };
 
@@ -116,28 +106,43 @@ const SkillsSection = () => {
   };
 
   const addSkill = async () => {
-    const { category, name, iconName, logoPreview } = newSkill;
+    const { category, name, iconName, logoFile } = newSkill;
+    if (!category) return alert("Please select a category");
     if (!name.trim()) return alert("Please enter a skill name");
 
-    const res = await axios.post("http://localhost:5000/api/Skills", {
-      category,
-      name,
-      iconName,
-      logoUrl: logoPreview || "",
-    });
+    try {
+      const formData = new FormData();
+      formData.append("category", category);
+      formData.append("name", name);
+      formData.append("iconName", iconName);
+      if (logoFile) {
+        formData.append("icon", logoFile); // multer expects 'icon' field name for file upload
+      }
 
-    setSkills((prev) => ({
-      ...prev,
-      [category]: [...prev[category], res.data],
-    }));
+      const res = await axios.post(
+        "http://localhost:5000/api/Skills",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
-    setNewSkill({
-      category,
-      name: "",
-      iconName: "",
-      logoFile: null,
-      logoPreview: null,
-    });
+      setSkills((prev) => ({
+        ...prev,
+        [category]: [...prev[category], res.data],
+      }));
+
+      setNewSkill({
+        category,
+        name: "",
+        iconName: "",
+        logoFile: null,
+        logoPreview: null,
+      });
+    } catch (error) {
+      console.error("Error adding skill:", error);
+      alert("Failed to add skill. Please try again.");
+    }
   };
 
   const deleteSkill = async (category, id) => {

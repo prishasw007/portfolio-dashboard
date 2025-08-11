@@ -6,19 +6,34 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   const onLogin = async (email, password) => {
-    // TEMPORARY: No API call, just log in instantly
-    console.log("Logging in with:", email, password);
+    try {
+      const response = await fetch("http://localhost:5000/api/Auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
 
-    // Optionally store fake token or user info
-    localStorage.setItem("token", "fake-token");
-    localStorage.setItem("userEmail", email);
+      const data = await response.json();
 
-    // Redirect to dashboard
-    navigate("/dashboard");
+      if (response.ok) {
+        // Store token or session info in localStorage
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userEmail", email);
+
+        // Redirect to dashboard
+        navigate("/dashboard");
+      } else {
+        alert(data.message || "Login failed. Please check your credentials.");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("An error occurred. Please try again.");
+    }
   };
 
   return <Login onLogin={onLogin} />;
 };
 
 export default LoginPage;
-

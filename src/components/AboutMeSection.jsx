@@ -18,12 +18,16 @@ const AboutMeSection = () => {
 
   useEffect(() => {
     const fetchAbout = async () => {
-      const res = await axios.get("http://localhost:5000/api/AboutMe");
-      if (res.data.length > 0) {
-        const about = res.data[0];
-        setAboutId(about._id);
-        setAboutText(about.text);
-        setPreview(about.logo || null);
+      try {
+        const res = await axios.get("http://localhost:5000/api/AboutMe");
+        if (res.data.length > 0) {
+          const about = res.data[0];
+          setAboutId(about._id);
+          setAboutText(about.text);
+          setPreview(about.logo || null);
+        }
+      } catch (error) {
+        console.error("Failed to load AboutMe:", error);
       }
     };
     fetchAbout();
@@ -43,61 +47,30 @@ const AboutMeSection = () => {
     }
   };
 
-  const handleText = async () => {
-    if (!aboutId) {
-      // No saved about data yet, just clear locally
-      setAboutText("");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      // Send PUT request to update only the logo to null
-      const res = await axios.put(
-        `http://localhost:5000/api/AboutMe/${aboutId}`,
-        {
-          logo: preview,
-          text: "",
-        }
-      );
-
-      // Update local state accordingly
-      setAboutText(res.data.text || "");
-      alert("Text cleared successfully.");
-    } catch (error) {
-      console.error("Failed to delete text:", error);
-      alert("Error deleting text, please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDeletePhoto = async () => {
     if (!aboutId) {
-      // No saved about data yet, just clear locally
       setPhoto(null);
       setPreview(null);
       return;
     }
-
     try {
       setLoading(true);
-      // Send PUT request to update only the logo to null
+      const formData = new FormData();
+      formData.append("text", aboutText);
+      formData.append("removePhoto", "true");
+
       const res = await axios.put(
         `http://localhost:5000/api/AboutMe/${aboutId}`,
-        {
-          logo: null, // Remove the logo
-          text: aboutText, // Keep existing text unchanged
-        }
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      // Update local state accordingly
       setPreview(null);
       setPhoto(null);
-      setAboutText(res.data.text); // refresh text from backend response (optional)
+      setAboutText(res.data.text);
     } catch (error) {
       console.error("Failed to delete photo:", error);
-      alert("Error deleting profile photo, please try again.");
+      alert("Error deleting profile photo.");
     } finally {
       setLoading(false);
     }
@@ -106,25 +79,26 @@ const AboutMeSection = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // Send JSON with aboutText and base64 photo string (or null)
-      const payload = {
-        text: aboutText,
-        logo: preview || null, // preview contains base64 string from upload
-      };
+      const formData = new FormData();
+      formData.append("text", aboutText);
+      if (photo) formData.append("photo", photo);
 
       let res;
       if (aboutId) {
         res = await axios.put(
           `http://localhost:5000/api/AboutMe/${aboutId}`,
-          payload
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
         );
       } else {
-        res = await axios.post("http://localhost:5000/api/AboutMe", payload);
+        res = await axios.post("http://localhost:5000/api/AboutMe", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
         setAboutId(res.data._id);
       }
 
       setAboutText(res.data.text);
-      setPreview(res.data.logo || null);
+      setPreview(res.data.logo || null); // backend sends 'logo'
       setPhoto(null);
       alert("About Me info saved successfully!");
     } catch (error) {
@@ -142,8 +116,7 @@ const AboutMeSection = () => {
       </Typography>
 
       <TextField
-        label="Write something about yourself here..."
-        // placeholder="Write something about yourself here..."
+        label="Write something about yourself..."
         multiline
         rows={6}
         fullWidth
@@ -151,19 +124,6 @@ const AboutMeSection = () => {
         onChange={(e) => setAboutText(e.target.value)}
         sx={{ mb: 4 }}
       />
-      {/* {aboutText && (
-        <>
-          <Button
-            variant="outlined"
-            color="error"
-            onClick={handleText}
-            disabled={loading}
-            sx={{ mb: 4 }}
-          >
-            Clear text
-          </Button>
-        </>
-      )} */}
 
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 4 }}>
         <Button variant="contained" component="label" disabled={loading}>
@@ -173,7 +133,6 @@ const AboutMeSection = () => {
             accept="image/*"
             hidden
             onChange={handlePhotoChange}
-            disabled={loading}
           />
         </Button>
 

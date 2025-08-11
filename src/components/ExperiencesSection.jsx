@@ -21,8 +21,10 @@ const ExperienceSection = () => {
     duration: "",
     location: "",
     description: "",
-    logo: null, // store image as Data URL
+    logo: null, // store File object here
   });
+
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const fileInputRef = useRef();
 
@@ -39,16 +41,15 @@ const ExperienceSection = () => {
     setNewExperience((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle logo upload and convert to base64 string for preview/storage
+  // Handle logo upload and set file + preview URL
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setNewExperience((prev) => ({ ...prev, logo: reader.result }));
-    };
-    reader.readAsDataURL(file);
+    setNewExperience((prev) => ({ ...prev, logo: file }));
+
+    // Create preview URL
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   // Clear logo input (to allow re-upload same file if needed)
@@ -58,13 +59,14 @@ const ExperienceSection = () => {
     }
   };
 
-  // Remove uploaded logo from form
+  // Remove uploaded logo from form & preview
   const removeLogo = () => {
     setNewExperience((prev) => ({ ...prev, logo: null }));
+    setPreviewUrl(null);
     clearLogoInput();
   };
 
-  //Add experience from backend
+  // Add experience - send formData with file
   const addExperience = async () => {
     const { companyName, jobTitle, duration, location, description, logo } =
       newExperience;
@@ -72,44 +74,49 @@ const ExperienceSection = () => {
       return alert("Company name and job title are required.");
     }
 
-    const res = await axios.post("http://localhost:5000/api/Experiences", {
-      companyName,
-      jobTitle,
-      duration,
-      location,
-      description,
-      logo,
-    });
+    try {
+      const formData = new FormData();
+      formData.append("companyName", companyName);
+      formData.append("jobTitle", jobTitle);
+      formData.append("duration", duration);
+      formData.append("location", location);
+      formData.append("description", description);
 
-    setExperiences((prev) => [...prev, res.data]);
+      if (logo) {
+        formData.append("logo", logo);
+      }
 
-    setNewExperience({
-      companyName: "",
-      jobTitle: "",
-      duration: "",
-      location: "",
-      description: "",
-      logo: null,
-    });
+      const res = await axios.post("http://localhost:5000/api/Experiences", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    clearLogoInput();
+      setExperiences((prev) => [...prev, res.data]);
+
+      setNewExperience({
+        companyName: "",
+        jobTitle: "",
+        duration: "",
+        location: "",
+        description: "",
+        logo: null,
+      });
+      setPreviewUrl(null);
+      clearLogoInput();
+    } catch (error) {
+      console.error("Failed to add experience", error);
+      alert("Failed to add experience");
+    }
   };
 
-  // Delete experience from backend and update state by filtering with _id
+  // Delete experience from backend and update state
   const deleteExperience = async (id) => {
-    await axios.delete(`http://localhost:5000/api/Experiences/${id}`);
-    setExperiences((prev) => prev.filter((exp) => exp._id !== id));
-  };
-
-  // Update experience in backend and update state by mapping over _id
-  const updateExperience = async (id, updatedFields) => {
-    const res = await axios.put(
-      `http://localhost:5000/api/Experiences/${id}`,
-      updatedFields
-    );
-    setExperiences((prev) =>
-      prev.map((exp) => (exp._id === id ? res.data : exp))
-    );
+    try {
+      await axios.delete(`http://localhost:5000/api/Experiences/${id}`);
+      setExperiences((prev) => prev.filter((exp) => exp._id !== id));
+    } catch (error) {
+      console.error("Failed to delete experience", error);
+      alert("Failed to delete experience");
+    }
   };
 
   return (
@@ -140,7 +147,7 @@ const ExperienceSection = () => {
           />
         </Button>
 
-        {newExperience.logo && (
+        {previewUrl && (
           <Box
             sx={{
               display: "flex",
@@ -151,8 +158,8 @@ const ExperienceSection = () => {
           >
             <Box
               component="img"
-              src={newExperience.logo}
-              alt="Company Logo"
+              src={previewUrl}
+              alt="Company Logo Preview"
               sx={{
                 width: 100,
                 height: 100,
@@ -213,15 +220,21 @@ const ExperienceSection = () => {
       </Paper>
 
       {experiences.length === 0 && (
-        <Typography color="text.secondary">
-          No experiences added yet.
-        </Typography>
+        <Typography color="text.secondary">No experiences added yet.</Typography>
       )}
 
       <Grid container spacing={2}>
         {experiences.map(
           (
-            { _id,companyName, jobTitle, duration, location, description, logo },
+            {
+              _id,
+              companyName,
+              jobTitle,
+              duration,
+              location,
+              description,
+              logo,
+            },
             index
           ) => (
             <Grid item xs={12} md={6} key={_id}>
