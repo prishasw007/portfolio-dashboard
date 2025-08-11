@@ -21,52 +21,59 @@ const ExperienceSection = () => {
     duration: "",
     location: "",
     description: "",
-    logo: null, // store File object here
+    logo: null, // File object for new upload
   });
 
   const [previewUrl, setPreviewUrl] = useState(null);
-
   const fileInputRef = useRef();
 
-  // fetching from backend
+  // Edit mode state
+  const [editingId, setEditingId] = useState(null);
+  const [editExperience, setEditExperience] = useState({
+    companyName: "",
+    jobTitle: "",
+    duration: "",
+    location: "",
+    description: "",
+    logo: null, // This can be a URL string or a File object while editing
+  });
+  const [editPreviewUrl, setEditPreviewUrl] = useState(null);
+  const editFileInputRef = useRef();
+
+  // Fetch experiences on mount
   useEffect(() => {
     axios.get("http://localhost:5000/api/Experiences").then((res) => {
       setExperiences(res.data);
     });
   }, []);
 
-  // Handle form input changes
+  // Handlers for new experience inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewExperience((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle logo upload and set file + preview URL
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setNewExperience((prev) => ({ ...prev, logo: file }));
-
-    // Create preview URL
     setPreviewUrl(URL.createObjectURL(file));
   };
 
-  // Clear logo input (to allow re-upload same file if needed)
   const clearLogoInput = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  // Remove uploaded logo from form & preview
   const removeLogo = () => {
     setNewExperience((prev) => ({ ...prev, logo: null }));
     setPreviewUrl(null);
     clearLogoInput();
   };
 
-  // Add experience - send formData with file
+  // Add new experience
   const addExperience = async () => {
     const { companyName, jobTitle, duration, location, description, logo } =
       newExperience;
@@ -91,7 +98,6 @@ const ExperienceSection = () => {
       });
 
       setExperiences((prev) => [...prev, res.data]);
-
       setNewExperience({
         companyName: "",
         jobTitle: "",
@@ -108,7 +114,7 @@ const ExperienceSection = () => {
     }
   };
 
-  // Delete experience from backend and update state
+  // Delete experience
   const deleteExperience = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/api/Experiences/${id}`);
@@ -119,12 +125,111 @@ const ExperienceSection = () => {
     }
   };
 
+  // Edit mode handlers
+  const startEditing = (exp) => {
+    setEditingId(exp._id);
+    setEditExperience({
+      companyName: exp.companyName || "",
+      jobTitle: exp.jobTitle || "",
+      duration: exp.duration || "",
+      location: exp.location || "",
+      description: exp.description || "",
+      logo: exp.logo || null, // string URL or null
+    });
+    setEditPreviewUrl(exp.logo || null);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditExperience((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setEditExperience((prev) => ({ ...prev, logo: file }));
+    setEditPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const clearEditLogoInput = () => {
+    if (editFileInputRef.current) {
+      editFileInputRef.current.value = "";
+    }
+  };
+
+  const removeEditLogo = () => {
+    setEditExperience((prev) => ({ ...prev, logo: null }));
+    setEditPreviewUrl(null);
+    clearEditLogoInput();
+  };
+
+  // Update experience
+  const updateExperience = async () => {
+    const {
+      companyName,
+      jobTitle,
+      duration,
+      location,
+      description,
+      logo,
+    } = editExperience;
+
+    if (!companyName.trim() || !jobTitle.trim()) {
+      return alert("Company name and job title are required.");
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("companyName", companyName);
+      formData.append("jobTitle", jobTitle);
+      formData.append("duration", duration);
+      formData.append("location", location);
+      formData.append("description", description);
+
+      // Append logo only if it's a File (new upload), skip if it's URL string (existing)
+      if (logo && typeof logo !== "string") {
+        formData.append("logo", logo);
+      }
+
+      const res = await axios.put(
+        `http://localhost:5000/api/Experiences/${editingId}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      setExperiences((prev) =>
+        prev.map((exp) => (exp._id === editingId ? res.data : exp))
+      );
+      cancelEditing();
+    } catch (error) {
+      console.error("Failed to update experience", error);
+      alert("Failed to update experience");
+    }
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditExperience({
+      companyName: "",
+      jobTitle: "",
+      duration: "",
+      location: "",
+      description: "",
+      logo: null,
+    });
+    setEditPreviewUrl(null);
+    clearEditLogoInput();
+  };
+
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
         Manage Experiences
       </Typography>
 
+      {/* Add Experience Form */}
       <Paper sx={{ p: 3, mb: 4 }}>
         <TextField
           label="Company Name"
@@ -219,6 +324,7 @@ const ExperienceSection = () => {
         </Button>
       </Paper>
 
+      {/* Experiences List */}
       {experiences.length === 0 && (
         <Typography color="text.secondary">No experiences added yet.</Typography>
       )}
@@ -249,31 +355,157 @@ const ExperienceSection = () => {
                   <DeleteIcon fontSize="small" />
                 </IconButton>
 
-                {logo && (
-                  <Box
-                    component="img"
-                    src={logo}
-                    alt={`${companyName} logo`}
-                    sx={{
-                      width: 60,
-                      height: 60,
-                      objectFit: "contain",
-                      mb: 1,
-                      borderRadius: 1,
-                    }}
-                  />
-                )}
+                {editingId === _id ? (
+                  <>
+                    <TextField
+                      label="Company Name"
+                      name="companyName"
+                      value={editExperience.companyName}
+                      onChange={handleEditChange}
+                      fullWidth
+                      sx={{ mb: 1 }}
+                      required
+                    />
 
-                <Typography variant="h6">{companyName}</Typography>
-                <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                  {jobTitle}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {duration} | {location}
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  {description}
-                </Typography>
+                    <Button variant="outlined" component="label" sx={{ mb: 1 }}>
+                      {editPreviewUrl ? "Change Logo" : "Upload Company Logo"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={handleEditLogoChange}
+                        ref={editFileInputRef}
+                      />
+                    </Button>
+
+                    {editPreviewUrl && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                          mb: 1,
+                        }}
+                      >
+                        <Box
+                          component="img"
+                          src={editPreviewUrl}
+                          alt="Logo Preview"
+                          sx={{
+                            width: 100,
+                            height: 100,
+                            objectFit: "contain",
+                            borderRadius: 1,
+                          }}
+                        />
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={removeEditLogo}
+                        >
+                          Remove Logo
+                        </Button>
+                      </Box>
+                    )}
+
+                    <TextField
+                      label="Job Title"
+                      name="jobTitle"
+                      value={editExperience.jobTitle}
+                      onChange={handleEditChange}
+                      fullWidth
+                      sx={{ mb: 1 }}
+                      required
+                    />
+
+                    <TextField
+                      label="Duration / Time"
+                      name="duration"
+                      value={editExperience.duration}
+                      onChange={handleEditChange}
+                      fullWidth
+                      sx={{ mb: 1 }}
+                      placeholder="e.g., Jan 2022 - Dec 2023"
+                    />
+
+                    <TextField
+                      label="Location"
+                      name="location"
+                      value={editExperience.location}
+                      onChange={handleEditChange}
+                      fullWidth
+                      sx={{ mb: 1 }}
+                      placeholder="City, Country"
+                    />
+
+                    <TextField
+                      label="Short Description"
+                      name="description"
+                      value={editExperience.description}
+                      onChange={handleEditChange}
+                      fullWidth
+                      multiline
+                      rows={3}
+                      sx={{ mb: 1 }}
+                    />
+
+                    <Box sx={{ display: "flex", gap: 2 }}>
+                      <Button variant="contained" onClick={updateExperience}>
+                        Save
+                      </Button>
+                      <Button variant="outlined" onClick={cancelEditing}>
+                        Cancel
+                      </Button>
+                    </Box>
+                  </>
+                ) : (
+                  <>
+                    {logo && (
+                      <Box
+                        component="img"
+                        src={logo}
+                        alt={`${companyName} logo`}
+                        sx={{
+                          width: 60,
+                          height: 60,
+                          objectFit: "contain",
+                          mb: 1,
+                          borderRadius: 1,
+                        }}
+                      />
+                    )}
+
+                    <Typography variant="h6">{companyName}</Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                      {jobTitle}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {duration} | {location}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      {description}
+                    </Typography>
+
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      sx={{ mt: 1 }}
+                      onClick={() =>
+                        startEditing({
+                          _id,
+                          companyName,
+                          jobTitle,
+                          duration,
+                          location,
+                          description,
+                          logo,
+                        })
+                      }
+                    >
+                      Edit
+                    </Button>
+                  </>
+                )}
               </Paper>
             </Grid>
           )

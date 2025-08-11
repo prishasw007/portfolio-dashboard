@@ -19,6 +19,7 @@ import * as MdIcons from "react-icons/md";
 import * as IoIcons from "react-icons/io";
 import * as GiIcons from "react-icons/gi";
 import * as AiIcons from "react-icons/ai";
+import * as BiIcons from "react-icons/bi";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 const getIconComponent = (iconName) => {
@@ -39,6 +40,8 @@ const getIconComponent = (iconName) => {
       return GiIcons[iconName];
     case "ai":
       return AiIcons[iconName];
+    case "bi":
+      return BiIcons[iconName];
     default:
       return null;
   }
