@@ -8,6 +8,7 @@ import {
   Stack,
 } from "@mui/material";
 import axios from "axios";
+import toast, {Toaster} from "react-hot-toast";
 
 const AboutMeSection = () => {
   const [aboutText, setAboutText] = useState("");
@@ -27,6 +28,7 @@ const AboutMeSection = () => {
           setPreview(about.logo || null);
         }
       } catch (error) {
+        toast.error("Failed to load AboutMe");
         console.error("Failed to load AboutMe:", error);
       }
     };
@@ -43,7 +45,10 @@ const AboutMeSection = () => {
     } else {
       setPhoto(null);
       setPreview(null);
-      alert("Please select a valid image file.");
+      toast("Please select a valid image file",{
+        icon: "⚠️",
+        style: { background: "#fff3cd", color: "#856404" },
+      });
     }
   };
 
@@ -70,7 +75,7 @@ const AboutMeSection = () => {
       setAboutText(res.data.text);
     } catch (error) {
       console.error("Failed to delete photo:", error);
-      alert("Error deleting profile photo.");
+      toast.error("Error deleting profile photo.");
     } finally {
       setLoading(false);
     }
@@ -100,10 +105,11 @@ const AboutMeSection = () => {
       setAboutText(res.data.text);
       setPreview(res.data.logo || null); // backend sends 'logo'
       setPhoto(null);
-      alert("About Me info saved successfully!");
+      toast.success("About Me info saved successfully!");
+      // alert("About Me info saved successfully!");
     } catch (error) {
       console.error("Error saving About Me info:", error);
-      alert("An error occurred. Please try again.");
+      toast.error("Error saving About Me info");
     } finally {
       setLoading(false);
     }
@@ -111,6 +117,7 @@ const AboutMeSection = () => {
 
   return (
     <Box sx={{ maxWidth: 700, p: 3 }}>
+      <Toaster position ="top-right"/>
       <Typography variant="h4" gutterBottom>
         About Me
       </Typography>

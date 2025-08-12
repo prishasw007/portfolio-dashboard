@@ -14,13 +14,6 @@ const DashboardPage = () => {
   const [activeSection, setActiveSection] = useState("home");
   const navigate = useNavigate();
 
-  // Commented out API calls for now
-  /*
-  useEffect(() => {
-    // fetch portfolio data from API
-  }, []);
-  */
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");

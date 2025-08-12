@@ -7,7 +7,7 @@ const Home = () => {
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 600 }}>
         Welcome to your Portfolio Dashboard 🎉
       </Typography>
-
+{/* 
       <Typography variant="body1" sx={{ mb: 3 }}>
         Start by adding your portfolio link or jump into editing your skills, projects, and more!
       </Typography>
@@ -17,7 +17,7 @@ const Home = () => {
         <Button variant="contained" color="primary">
           Save Link
         </Button>
-      </Box>
+      </Box> */}
 
       <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
         What you can do from here:

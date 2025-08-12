@@ -3,9 +3,9 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const router = express.Router();
 
-// Load admin creds from env
+//Load admin creds from env 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH; // hashed password stored
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH
 
 const generateToken = (email) => {
   return jwt.sign({ email }, process.env.JWT_SECRET, {

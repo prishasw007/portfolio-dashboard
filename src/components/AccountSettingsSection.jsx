@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
-  Box, Typography, TextField, Button, Stack, Dialog,
-  DialogTitle, DialogContent, DialogActions,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
+import toast, { Toaster } from "react-hot-toast";
 
 const AccountSettings = () => {
   const [accountId, setAccountId] = useState(null); // store _id for update/delete
@@ -19,7 +27,9 @@ const AccountSettings = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/AccountSettings"); // fetch all settings
+        const res = await axios.get(
+          "http://localhost:5000/api/AccountSettings"
+        ); // fetch all settings
         if (res.data.length > 0) {
           const data = res.data[0]; // get first item
           setAccountId(data._id);
@@ -30,6 +40,7 @@ const AccountSettings = () => {
           setTypewriterWords(data.typewriterWords || "");
         }
       } catch (err) {
+        toast.error("Failed to fetch account settings");
         console.error("Failed to fetch account settings:", err);
       }
     };
@@ -38,7 +49,11 @@ const AccountSettings = () => {
 
   const handleSave = async () => {
     if (!accountId) {
-      alert("No account to update.");
+      toast("No account to update", {
+        icon: "⚠️",
+        style: { background: "#fff3cd", color: "#856404" },
+      });
+      // alert("No account to update.");
       return;
     }
 
@@ -51,23 +66,35 @@ const AccountSettings = () => {
     };
 
     try {
-      await axios.put(`http://localhost:5000/api/AccountSettings/${accountId}`, payload);
-      alert("Settings saved!");
+      await axios.put(
+        `http://localhost:5000/api/AccountSettings/${accountId}`,
+        payload
+      );
+      toast.success("Settings saved!");
+      // alert("Settings saved!");
     } catch (err) {
       console.error("Failed to save settings:", err);
-      alert("Error saving settings.");
+      toast.error("Failed to save settings");
+      // alert("Error saving settings.");
     }
   };
 
   const confirmDelete = async () => {
     if (!accountId) {
-      alert("No account to delete.");
+      toast("No account to delete.", {
+        icon: "⚠️",
+        style: { background: "#fff3cd", color: "#856404" },
+      });
+      // alert("No account to delete.");
       return;
     }
 
     try {
-      await axios.delete(`http://localhost:5000/api/AccountSettings/${accountId}`);
-      alert("Account deleted.");
+      await axios.delete(
+        `http://localhost:5000/api/AccountSettings/${accountId}`
+      );
+      toast.success("Account deleted")
+      // alert("Account deleted.");
       setDeleteDialogOpen(false);
 
       // Optional: Clear state or redirect user
@@ -79,21 +106,43 @@ const AccountSettings = () => {
       setTypewriterWords("");
     } catch (err) {
       console.error("Delete failed:", err);
-      alert("Error deleting account.");
+      toast.error("Error deleting account")
+      // alert("Error deleting account.");
     }
   };
 
   return (
     <Box sx={{ maxWidth: 700, p: 3 }}>
+      <Toaster position="top-right"/>
       <Typography variant="h4" gutterBottom>
         Account Settings
       </Typography>
 
       <Stack spacing={3}>
-        <TextField label="Name" fullWidth value={name} onChange={(e) => setName(e.target.value)} />
-        <TextField label="LinkedIn URL" fullWidth value={linkedin} onChange={(e) => setLinkedin(e.target.value)} />
-        <TextField label="Email" fullWidth value={email} onChange={(e) => setEmail(e.target.value)} />
-        <TextField label="GitHub URL" fullWidth value={github} onChange={(e) => setGithub(e.target.value)} />
+        <TextField
+          label="Name"
+          fullWidth
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <TextField
+          label="LinkedIn URL"
+          fullWidth
+          value={linkedin}
+          onChange={(e) => setLinkedin(e.target.value)}
+        />
+        <TextField
+          label="Email"
+          fullWidth
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <TextField
+          label="GitHub URL"
+          fullWidth
+          value={github}
+          onChange={(e) => setGithub(e.target.value)}
+        />
         <TextField
           label="Typewriter Words (comma separated)"
           fullWidth
@@ -103,19 +152,32 @@ const AccountSettings = () => {
         />
 
         <Stack direction="row" spacing={2} mt={3}>
-          <Button variant="contained" onClick={handleSave} disabled={!accountId}>
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            disabled={!accountId}
+          >
             Save Changes
           </Button>
-          <Button variant="outlined" color="error" onClick={() => setDeleteDialogOpen(true)} disabled={!accountId}>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => setDeleteDialogOpen(true)}
+            disabled={!accountId}
+          >
             Delete Account
           </Button>
         </Stack>
       </Stack>
 
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
         <DialogTitle>Confirm Account Deletion</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete your account? This action cannot be undone.
+          Are you sure you want to delete your account? This action cannot be
+          undone.
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>

@@ -10,6 +10,7 @@ import {
   Button,
   Paper,
 } from "@mui/material";
+import toast,{Toaster} from "react-hot-toast";
 
 const ContactMessagesSection = () => {
   const [messages, setMessages] = useState([]);
@@ -23,6 +24,7 @@ const ContactMessagesSection = () => {
         const res = await axios.get("http://localhost:5000/api/ContactMessages");
         setMessages(res.data);
       } catch (error) {
+        toast.error("Failed to fetch messages");
         console.error("Failed to fetch messages:", error);
       }
     };
@@ -37,12 +39,14 @@ const ContactMessagesSection = () => {
         setSelectedMessageId(null);
       }
     } catch (error) {
+      toast.error("Failed to fetch messages");
       console.error("Failed to delete message:", error);
     }
   };
 
   return (
     <Box>
+      <Toaster position="top-right"/>
       <Typography variant="h4" gutterBottom>
         Contact Messages
       </Typography>

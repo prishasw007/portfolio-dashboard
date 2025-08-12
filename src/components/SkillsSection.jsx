@@ -21,6 +21,7 @@ import * as GiIcons from "react-icons/gi";
 import * as AiIcons from "react-icons/ai";
 import * as BiIcons from "react-icons/bi";
 import DeleteIcon from "@mui/icons-material/Delete";
+import toast, { Toaster } from "react-hot-toast";
 
 const getIconComponent = (iconName) => {
   if (!iconName) return null;
@@ -63,7 +64,7 @@ const SkillsSection = () => {
   ];
 
   const [skills, setSkills] = useState({
-    Languages: [],
+    "Languages": [],
     "Frameworks and Technologies": [],
     "Developer Tools": [],
   });
@@ -110,8 +111,20 @@ const SkillsSection = () => {
 
   const addSkill = async () => {
     const { category, name, iconName, logoFile } = newSkill;
-    if (!category) return alert("Please select a category");
-    if (!name.trim()) return alert("Please enter a skill name");
+    if (!category) {
+      toast("Please select a category", {
+        icon: "⚠️",
+        style: { background: "#fff3cd", color: "#856404" },
+      });
+      return;
+    }
+    if (!name.trim()) {
+      toast("Please select a category", {
+        icon: "⚠️",
+        style: { background: "#fff3cd", color: "#856404" },
+      });
+      return;
+    }
 
     try {
       const formData = new FormData();
@@ -142,9 +155,11 @@ const SkillsSection = () => {
         logoFile: null,
         logoPreview: null,
       });
+
+      toast.success("Skill added successfully!");
     } catch (error) {
       console.error("Error adding skill:", error);
-      alert("Failed to add skill. Please try again.");
+      toast.error("Failed to add skill. Please try again.");
     }
   };
 
@@ -158,6 +173,8 @@ const SkillsSection = () => {
 
   return (
     <Box>
+      <Toaster position="top-right" />
+
       <Typography variant="h4" gutterBottom>
         Manage Skills
       </Typography>

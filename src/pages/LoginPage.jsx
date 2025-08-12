@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Login from "../components/auth/Login";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -25,11 +26,13 @@ const LoginPage = () => {
         // Redirect to dashboard
         navigate("/dashboard");
       } else {
-        alert(data.message || "Login failed. Please check your credentials.");
+        toast.error("Login failed. Please check your credentials.");
+        // alert(data.message || "Login failed. Please check your credentials.");
       }
     } catch (err) {
       console.error("Login error:", err);
-      alert("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
+      // alert("An error occurred. Please try again.");
     }
   };
 

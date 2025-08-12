@@ -11,6 +11,7 @@ import {
   Chip,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import toast, { Toaster } from "react-hot-toast";
 
 const ProjectsSection = () => {
   const [projects, setProjects] = useState([]);
@@ -50,7 +51,11 @@ const ProjectsSection = () => {
   // Add project (POST request)
   const addProject = async () => {
     if (!newProject.title.trim() || !newProject.description.trim()) {
-      alert("Please enter both title and description.");
+      toast("Please enter both title and description.", {
+              icon: "⚠️",
+              style: { background: "#fff3cd", color: "#856404" },
+            });
+      // alert("Please enter both title and description.");
       return;
     }
 
@@ -66,6 +71,7 @@ const ProjectsSection = () => {
       websiteLink: "",
       languagesUsed: "",
     });
+    toast.success("Project added successfully!")
   };
 
   // Delete project (DELETE request)
@@ -118,20 +124,22 @@ const ProjectsSection = () => {
       cancelEditing();
     } catch (error) {
       console.error("Failed to update project:", error);
-      alert("Failed to update project.");
+      toast.error("Failed to update project.")
+      // alert("Failed to update project.");
     }
   };
 
   // Split languages into array for chips
   const getLanguagesArray = (languagesString) => {
     return languagesString
-      .split(",")
+      .split("|")
       .map((lang) => lang.trim())
       .filter((lang) => lang.length > 0);
   };
 
   return (
     <Box>
+      <Toaster position="top-right" />
       <Typography variant="h4" gutterBottom>
         Manage Projects
       </Typography>

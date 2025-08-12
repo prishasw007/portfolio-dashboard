@@ -10,6 +10,7 @@ import {
   Paper,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import toast, {Toaster} from "react-hot-toast";
 
 const ExperienceSection = () => {
   const [experiences, setExperiences] = useState([]);
@@ -78,7 +79,11 @@ const ExperienceSection = () => {
     const { companyName, jobTitle, duration, location, description, logo } =
       newExperience;
     if (!companyName.trim() || !jobTitle.trim()) {
-      return alert("Company name and job title are required.");
+      toast("Company name and job title are required.", {
+        icon: "⚠️",
+        style: { background: "#fff3cd", color: "#856404" },
+      });
+      return;
     }
 
     try {
@@ -93,9 +98,13 @@ const ExperienceSection = () => {
         formData.append("logo", logo);
       }
 
-      const res = await axios.post("http://localhost:5000/api/Experiences", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axios.post(
+        "http://localhost:5000/api/Experiences",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
       setExperiences((prev) => [...prev, res.data]);
       setNewExperience({
@@ -110,7 +119,8 @@ const ExperienceSection = () => {
       clearLogoInput();
     } catch (error) {
       console.error("Failed to add experience", error);
-      alert("Failed to add experience");
+      toast.error("Failed to add experience");
+      // alert("Failed to add experience");
     }
   };
 
@@ -121,7 +131,8 @@ const ExperienceSection = () => {
       setExperiences((prev) => prev.filter((exp) => exp._id !== id));
     } catch (error) {
       console.error("Failed to delete experience", error);
-      alert("Failed to delete experience");
+      toast.error("Failed to delete experience");
+      // alert("Failed to delete experience");
     }
   };
 
@@ -165,17 +176,16 @@ const ExperienceSection = () => {
 
   // Update experience
   const updateExperience = async () => {
-    const {
-      companyName,
-      jobTitle,
-      duration,
-      location,
-      description,
-      logo,
-    } = editExperience;
+    const { companyName, jobTitle, duration, location, description, logo } =
+      editExperience;
 
     if (!companyName.trim() || !jobTitle.trim()) {
-      return alert("Company name and job title are required.");
+      toast("Company name and job title are required.", {
+        icon: "⚠️",
+        style: { background: "#fff3cd", color: "#856404" },
+      });
+      return;
+      // return alert("Company name and job title are required.");
     }
 
     try {
@@ -205,7 +215,8 @@ const ExperienceSection = () => {
       cancelEditing();
     } catch (error) {
       console.error("Failed to update experience", error);
-      alert("Failed to update experience");
+      toast.error("Failed to update experience");
+      // alert("Failed to update experience");
     }
   };
 
@@ -225,6 +236,7 @@ const ExperienceSection = () => {
 
   return (
     <Box>
+      <Toaster position="top-right" />
       <Typography variant="h4" gutterBottom>
         Manage Experiences
       </Typography>
@@ -326,7 +338,9 @@ const ExperienceSection = () => {
 
       {/* Experiences List */}
       {experiences.length === 0 && (
-        <Typography color="text.secondary">No experiences added yet.</Typography>
+        <Typography color="text.secondary">
+          No experiences added yet.
+        </Typography>
       )}
 
       <Grid container spacing={2}>
