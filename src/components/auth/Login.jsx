@@ -1,5 +1,16 @@
 import React, { useState } from "react";
-import {Box,Paper,Typography,Button,Link,IconButton,InputAdornment,FormControl,InputLabel,OutlinedInput,} from "@mui/material";
+import {
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Link,
+  IconButton,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+} from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const Login = ({ onLogin }) => {
@@ -17,25 +28,48 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <Box className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <Box
+      sx={{
+        minHeight: "100vh",
+        minWidth: "100vw",
+        margin: 0,
+        padding: 0,
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 3,
+      }}
+    >
       <Paper
-        elevation={3}
         component="form"
         onSubmit={handleSubmit}
-        className="w-full rounded shadow bg-white"
-        sx={{ maxWidth: 700, px: 6, py: 8 }}
+        elevation={6}
+        sx={{
+          maxWidth: 400,
+          width: "100%",
+          p: 5,
+          borderRadius: 3,
+          boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+          bgcolor: "background.paper",
+        }}
       >
         <Typography
-          variant="h5"
+          variant="h4"
           component="h1"
-          className="text-center"
-          sx={{ fontWeight: "bold", mb: 3 }}
+          sx={{
+            fontWeight: "700",
+            mb: 4,
+            color: "primary.main",
+            textAlign: "center",
+            letterSpacing: 1,
+          }}
         >
           Sign In
         </Typography>
 
         {/* Email Field */}
-        <FormControl fullWidth required sx={{ mb: 4 }} variant="outlined">
+        <FormControl fullWidth required sx={{ mb: 3 }} variant="outlined">
           <InputLabel htmlFor="email">Email</InputLabel>
           <OutlinedInput
             id="email"
@@ -43,16 +77,17 @@ const Login = ({ onLogin }) => {
             label="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            slotProps={{
-              input: {
-                autoComplete: "email",
+            autoComplete="email"
+            sx={{
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "primary.main",
               },
             }}
           />
         </FormControl>
 
         {/* Password Field */}
-        <FormControl fullWidth required sx={{ mb: 6 }} variant="outlined">
+        <FormControl fullWidth required sx={{ mb: 4 }} variant="outlined">
           <InputLabel htmlFor="password">Password</InputLabel>
           <OutlinedInput
             id="password"
@@ -60,6 +95,7 @@ const Login = ({ onLogin }) => {
             label="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
             endAdornment={
               <InputAdornment position="end">
                 <IconButton
@@ -71,9 +107,9 @@ const Login = ({ onLogin }) => {
                 </IconButton>
               </InputAdornment>
             }
-            slotProps={{
-              input: {
-                autoComplete: "current-password",
+            sx={{
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "primary.main",
               },
             }}
           />
@@ -84,20 +120,36 @@ const Login = ({ onLogin }) => {
           type="submit"
           variant="contained"
           fullWidth
-          className="bg-blue-600 hover:bg-blue-700 font-medium text-white"
-          sx={{ py: 2.5 }}
+          sx={{
+            py: 2.5,
+            fontWeight: "bold",
+            fontSize: "1rem",
+            backgroundColor: "primary.main",
+            "&:hover": {
+              backgroundColor: "primary.dark",
+            },
+            boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
+            transition: "all 0.3s ease",
+          }}
         >
           Login
         </Button>
 
-        <Box className="text-center" sx={{ mt: 3 }}>
+        {/* Optional: Forgot Password Link */}
+        {/* <Box sx={{ mt: 3, textAlign: "center" }}>
           <Link
             href="/forgot-password"
-            className="text-blue-600 hover:text-blue-800 font-medium"
+            underline="hover"
+            sx={{
+              color: "primary.light",
+              fontWeight: 500,
+              cursor: "pointer",
+              "&:hover": { color: "primary.main" },
+            }}
           >
             Forgot Password?
           </Link>
-        </Box>
+        </Box> */}
       </Paper>
     </Box>
   );

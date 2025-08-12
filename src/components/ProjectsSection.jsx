@@ -9,6 +9,7 @@ import {
   Grid,
   Paper,
   Chip,
+  Stack,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import toast, { Toaster } from "react-hot-toast";
@@ -52,9 +53,9 @@ const ProjectsSection = () => {
   const addProject = async () => {
     if (!newProject.title.trim() || !newProject.description.trim()) {
       toast("Please enter both title and description.", {
-              icon: "⚠️",
-              style: { background: "#fff3cd", color: "#856404" },
-            });
+        icon: "⚠️",
+        style: { background: "#fff3cd", color: "#856404" },
+      });
       // alert("Please enter both title and description.");
       return;
     }
@@ -71,7 +72,7 @@ const ProjectsSection = () => {
       websiteLink: "",
       languagesUsed: "",
     });
-    toast.success("Project added successfully!")
+    toast.success("Project added successfully!");
   };
 
   // Delete project (DELETE request)
@@ -124,7 +125,7 @@ const ProjectsSection = () => {
       cancelEditing();
     } catch (error) {
       console.error("Failed to update project:", error);
-      toast.error("Failed to update project.")
+      toast.error("Failed to update project.");
       // alert("Failed to update project.");
     }
   };
@@ -136,209 +137,365 @@ const ProjectsSection = () => {
       .map((lang) => lang.trim())
       .filter((lang) => lang.length > 0);
   };
-
   return (
-    <Box>
+    <Box sx={{ maxWidth: 900, mx: "auto", px: 3, py: 5 }}>
       <Toaster position="top-right" />
-      <Typography variant="h4" gutterBottom>
+
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{
+          fontWeight: 700,
+          color: "primary.main",
+          mb: 5,
+          textAlign: "center",
+          letterSpacing: 1,
+        }}
+      >
         Manage Projects
       </Typography>
 
       {/* Add New Project Form */}
-      <Paper sx={{ p: 3, mb: 4 }}>
-        <TextField
-          label="Project Title"
-          name="title"
-          value={newProject.title}
-          onChange={handleChange}
-          fullWidth
-          sx={{ mb: 2 }}
-          required
-        />
+      <Paper
+        elevation={6}
+        sx={{
+          p: 4,
+          mb: 6,
+          borderRadius: 3,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+          bgcolor: "background.paper",
+        }}
+      >
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <TextField
+              label="Project Title"
+              name="title"
+              value={newProject.title}
+              onChange={handleChange}
+              fullWidth
+              required
+              placeholder="Enter project title"
+              sx={{ mb: 2 }}
+            />
+          </Grid>
 
-        <TextField
-          label="Short Description"
-          name="description"
-          value={newProject.description}
-          onChange={handleChange}
-          fullWidth
-          multiline
-          rows={3}
-          sx={{ mb: 2 }}
-          required
-        />
+          <Grid item xs={12}>
+            <TextField
+              label="Short Description"
+              name="description"
+              value={newProject.description}
+              onChange={handleChange}
+              fullWidth
+              multiline
+              required
+              placeholder="Describe here"
+              sx={{ mb: 2 }}
+            />
+          </Grid>
 
-        <TextField
-          label="GitHub Link"
-          name="githubLink"
-          value={newProject.githubLink}
-          onChange={handleChange}
-          fullWidth
-          sx={{ mb: 2 }}
-          type="url"
-          placeholder="https://github.com/yourusername/project"
-        />
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="GitHub Link"
+              name="githubLink"
+              value={newProject.githubLink}
+              onChange={handleChange}
+              fullWidth
+              type="url"
+              placeholder="https://github.com/yourusername/project"
+              sx={{ mb: 2 }}
+            />
+          </Grid>
 
-        <TextField
-          label="Website Link (Optional)"
-          name="websiteLink"
-          value={newProject.websiteLink}
-          onChange={handleChange}
-          fullWidth
-          sx={{ mb: 2 }}
-          type="url"
-          placeholder="https://yourprojectwebsite.com"
-        />
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Website Link (Optional)"
+              name="websiteLink"
+              value={newProject.websiteLink}
+              onChange={handleChange}
+              fullWidth
+              type="url"
+              placeholder="https://yourprojectwebsite.com"
+              sx={{ mb: 2 }}
+            />
+          </Grid>
 
-        <TextField
-          label="Languages Used"
-          name="languagesUsed"
-          value={newProject.languagesUsed}
-          onChange={handleChange}
-          fullWidth
-          sx={{ mb: 2 }}
-          placeholder="JavaScript, React, Node.js"
-        />
+          <Grid item xs={12}>
+            <TextField
+              label="Languages Used"
+              name="languagesUsed"
+              value={newProject.languagesUsed}
+              onChange={handleChange}
+              fullWidth
+              placeholder="JavaScript, React, Node.js"
+              sx={{ mb: 3 }}
+            />
+          </Grid>
 
-        <Button variant="contained" onClick={addProject}>
-          Add Project
-        </Button>
+          <Grid item xs={12} sx={{ textAlign: "right" }}>
+            <Button
+              variant="contained"
+              onClick={addProject}
+              disabled={
+                !newProject.title.trim() || !newProject.description.trim()
+              }
+              sx={{
+                px: 5,
+                py: 1.5,
+                fontWeight: 700,
+                textTransform: "none",
+                boxShadow: "0 4px 14px rgb(0 123 255 / 0.4)",
+                "&:hover": {
+                  boxShadow: "0 6px 20px rgb(0 123 255 / 0.6)",
+                },
+              }}
+            >
+              Add Project
+            </Button>
+          </Grid>
+        </Grid>
       </Paper>
 
-      {projects.length === 0 && (
-        <Typography color="text.secondary">No projects added yet.</Typography>
-      )}
-
-      <Grid container spacing={2}>
-        {projects.map(
-          (
-            {
+      {/* Projects List */}
+      {projects.length === 0 ? (
+        <Typography
+          color="text.secondary"
+          align="center"
+          sx={{ mt: 10, fontStyle: "italic", fontSize: 18 }}
+        >
+          No projects added yet.
+        </Typography>
+      ) : (
+        <Grid container spacing={4}>
+          {projects.map(
+            ({
               _id,
               title,
               description,
               githubLink,
               websiteLink,
-              languagesUsed, // languages used
-            },
-            index
-          ) => (
-            <Grid item xs={12} md={6} key={_id}>
-              <Paper sx={{ p: 2, position: "relative" }} elevation={2}>
-                <IconButton
-                  aria-label="Delete project"
-                  color="error"
-                  size="small"
-                  sx={{ position: "absolute", top: 4, right: 4 }}
-                  onClick={() => deleteProject(_id)}
+              languagesUsed,
+            }) => (
+              <Grid item xs={12} md={6} key={_id}>
+                <Paper
+                  elevation={5}
+                  sx={{
+                    width: 900,
+                    p: 3,
+                    borderRadius: 3,
+                    position: "relative",
+                    transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                    "&:hover": {
+                      boxShadow: "0 12px 30px rgba(0,0,0,0.15)",
+                      transform: "translateY(-5px)",
+                    },
+                  }}
                 >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
+                  <IconButton
+                    aria-label="Delete project"
+                    color="error"
+                    size="small"
+                    sx={{ position: "absolute", top: 12, right: 12 }}
+                    onClick={() => deleteProject(_id)}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
 
-                {editingId === _id ? (
-                  <>
-                    <TextField
-                      label="Title"
-                      name="title"
-                      value={editForm.title}
-                      onChange={handleEditChange}
-                      fullWidth
-                      sx={{ mb: 1 }}
-                    />
-                    <TextField
-                      label="Description"
-                      name="description"
-                      value={editForm.description}
-                      onChange={handleEditChange}
-                      fullWidth
-                      multiline
-                      rows={3}
-                      sx={{ mb: 1 }}
-                    />
-                    <TextField
-                      label="GitHub Link"
-                      name="githubLink"
-                      value={editForm.githubLink}
-                      onChange={handleEditChange}
-                      fullWidth
-                      sx={{ mb: 1 }}
-                    />
-                    <TextField
-                      label="Website Link"
-                      name="websiteLink"
-                      value={editForm.websiteLink}
-                      onChange={handleEditChange}
-                      fullWidth
-                      sx={{ mb: 1 }}
-                    />
-                    <TextField
-                      label="Languages Used"
-                      name="languagesUsed"
-                      value={editForm.languagesUsed}
-                      onChange={handleEditChange}
-                      fullWidth
-                      sx={{ mb: 1 }}
-                      placeholder="JavaScript, React, Node.js"
-                    />
+                  {editingId === _id ? (
+                    <>
+                      <Stack spacing={2}>
+                        <TextField
+                          label="Title"
+                          name="title"
+                          value={editForm.title}
+                          onChange={handleEditChange}
+                          fullWidth
+                          required
+                        />
+                        <TextField
+                          label="Description"
+                          name="description"
+                          value={editForm.description}
+                          onChange={handleEditChange}
+                          fullWidth
+                          multiline
+                          rows={3}
+                          required
+                        />
+                        <TextField
+                          label="GitHub Link"
+                          name="githubLink"
+                          value={editForm.githubLink}
+                          onChange={handleEditChange}
+                          fullWidth
+                          type="url"
+                        />
+                        <TextField
+                          label="Website Link"
+                          name="websiteLink"
+                          value={editForm.websiteLink}
+                          onChange={handleEditChange}
+                          fullWidth
+                          type="url"
+                        />
+                        <TextField
+                          label="Languages Used"
+                          name="languagesUsed"
+                          value={editForm.languagesUsed}
+                          onChange={handleEditChange}
+                          fullWidth
+                          placeholder="JavaScript, React, Node.js"
+                        />
 
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Button variant="contained" onClick={updateProject}>
-                        Save
-                      </Button>
-                      <Button variant="outlined" onClick={cancelEditing}>
-                        Cancel
-                      </Button>
-                    </Box>
-                  </>
-                ) : (
-                  <>
-                    <Typography variant="h6" gutterBottom>
-                      {title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      {description}
-                    </Typography>
-
-                    {githubLink && (
-                      <Typography variant="body2" sx={{ mb: 0.5 }}>
-                        GitHub:{" "}
-                        <a href={githubLink} target="_blank" rel="noopener noreferrer">
-                          {githubLink}
-                        </a>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            mt: 1,
+                          }}
+                        >
+                          <Button
+                            variant="contained"
+                            onClick={updateProject}
+                            sx={{ px: 4, fontWeight: 600 }}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            onClick={cancelEditing}
+                            sx={{ px: 4 }}
+                          >
+                            Cancel
+                          </Button>
+                        </Box>
+                      </Stack>
+                    </>
+                  ) : (
+                    <>
+                      <Typography
+                        variant="h6"
+                        gutterBottom
+                        sx={{ fontWeight: 700, color: "text.primary" }}
+                      >
+                        {title}
                       </Typography>
-                    )}
 
-                    {websiteLink && (
-                      <Typography variant="body2" sx={{ mb: 1 }}>
-                        Website:{" "}
-                        <a href={websiteLink} target="_blank" rel="noopener noreferrer">
-                          {websiteLink}
-                        </a>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mb: 1,
+                          color: "text.secondary",
+                          whiteSpace: "pre-line",
+                        }}
+                      >
+                        {description}
                       </Typography>
-                    )}
 
-                    {languagesUsed && (
-                      <Box sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap" }}>
-                        {getLanguagesArray(languagesUsed).map((lang, i) => (
-                          <Chip key={i} label={lang} size="small" />
-                        ))}
-                      </Box>
-                    )}
+                      {githubLink && (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            mb: 0.5,
+                            color: "primary.main",
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          GitHub:{" "}
+                          <a
+                            href={githubLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: "inherit",
+                              textDecoration: "underline",
+                            }}
+                          >
+                            {githubLink}
+                          </a>
+                        </Typography>
+                      )}
 
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      sx={{ mt: 1 }}
-                      onClick={() => startEditing({ _id, title, description, githubLink, websiteLink, languagesUsed })}
-                    >
-                      Edit
-                    </Button>
-                  </>
-                )}
-              </Paper>
-            </Grid>
-          )
-        )}
-      </Grid>
+                      {websiteLink && (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            mb: 1,
+                            color: "primary.main",
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          Website:{" "}
+                          <a
+                            href={websiteLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: "inherit",
+                              textDecoration: "underline",
+                            }}
+                          >
+                            {websiteLink}
+                          </a>
+                        </Typography>
+                      )}
+
+                      {languagesUsed && (
+                        <Box
+                          sx={{
+                            mt: 1,
+                            display: "flex",
+                            gap: 1,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          {getLanguagesArray(languagesUsed).map((lang, i) => (
+                            <Chip
+                              key={i}
+                              label={lang}
+                              size="small"
+                              color="primary"
+                              sx={{ fontWeight: 600 }}
+                            />
+                          ))}
+                        </Box>
+                      )}
+
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          mt: 2,
+                          textTransform: "none",
+                          fontWeight: 600,
+                          borderColor: "primary.main",
+                          color: "primary.main",
+                          "&:hover": {
+                            borderColor: "primary.dark",
+                            backgroundColor: "primary.light",
+                          },
+                        }}
+                        onClick={() =>
+                          startEditing({
+                            _id,
+                            title,
+                            description,
+                            githubLink,
+                            websiteLink,
+                            languagesUsed,
+                          })
+                        }
+                      >
+                        Edit
+                      </Button>
+                    </>
+                  )}
+                </Paper>
+              </Grid>
+            )
+          )}
+        </Grid>
+      )}
     </Box>
   );
 };

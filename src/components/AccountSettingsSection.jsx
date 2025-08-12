@@ -93,7 +93,7 @@ const AccountSettings = () => {
       await axios.delete(
         `http://localhost:5000/api/AccountSettings/${accountId}`
       );
-      toast.success("Account deleted")
+      toast.success("Account deleted");
       // alert("Account deleted.");
       setDeleteDialogOpen(false);
 
@@ -106,15 +106,33 @@ const AccountSettings = () => {
       setTypewriterWords("");
     } catch (err) {
       console.error("Delete failed:", err);
-      toast.error("Error deleting account")
+      toast.error("Error deleting account");
       // alert("Error deleting account.");
     }
   };
 
   return (
-    <Box sx={{ maxWidth: 700, p: 3 }}>
-      <Toaster position="top-right"/>
-      <Typography variant="h4" gutterBottom>
+    <Box
+      sx={{
+        maxWidth: 700,
+        p: 4,
+        mx: "auto",
+        bgcolor: "background.paper",
+        borderRadius: 3,
+        boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+      }}
+    >
+      <Toaster position="top-right" />
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{
+          fontWeight: 700,
+          mb: 4,
+          textAlign: "center",
+          color: "primary.main",
+        }}
+      >
         Account Settings
       </Typography>
 
@@ -124,24 +142,48 @@ const AccountSettings = () => {
           fullWidth
           value={name}
           onChange={(e) => setName(e.target.value)}
+          sx={{
+            bgcolor: "#f9f9f9",
+            borderRadius: 1,
+            "& .MuiInputBase-root": { p: "12px" },
+            boxShadow: "inset 0 0 6px #e0e0e0",
+          }}
         />
         <TextField
           label="LinkedIn URL"
           fullWidth
           value={linkedin}
           onChange={(e) => setLinkedin(e.target.value)}
+          sx={{
+            bgcolor: "#f9f9f9",
+            borderRadius: 1,
+            "& .MuiInputBase-root": { p: "12px" },
+            boxShadow: "inset 0 0 6px #e0e0e0",
+          }}
         />
         <TextField
           label="Email"
           fullWidth
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          sx={{
+            bgcolor: "#f9f9f9",
+            borderRadius: 1,
+            "& .MuiInputBase-root": { p: "12px" },
+            boxShadow: "inset 0 0 6px #e0e0e0",
+          }}
         />
         <TextField
           label="GitHub URL"
           fullWidth
           value={github}
           onChange={(e) => setGithub(e.target.value)}
+          sx={{
+            bgcolor: "#f9f9f9",
+            borderRadius: 1,
+            "& .MuiInputBase-root": { p: "12px" },
+            boxShadow: "inset 0 0 6px #e0e0e0",
+          }}
         />
         <TextField
           label="Typewriter Words (comma separated)"
@@ -149,13 +191,30 @@ const AccountSettings = () => {
           value={typewriterWords}
           onChange={(e) => setTypewriterWords(e.target.value)}
           helperText="Words separated by commas"
+          sx={{
+            bgcolor: "#f9f9f9",
+            borderRadius: 1,
+            "& .MuiInputBase-root": { p: "12px" },
+            boxShadow: "inset 0 0 6px #e0e0e0",
+          }}
         />
 
-        <Stack direction="row" spacing={2} mt={3}>
+        <Stack direction="row" spacing={2} mt={4} justifyContent="center">
           <Button
             variant="contained"
             onClick={handleSave}
             disabled={!accountId}
+            sx={{
+              px: 5,
+              py: 1.5,
+              fontWeight: 700,
+              fontSize: 16,
+              textTransform: "none",
+              boxShadow: "0 5px 15px rgba(25,118,210,0.4)",
+              "&:hover": {
+                boxShadow: "0 7px 21px rgba(25,118,210,0.6)",
+              },
+            }}
           >
             Save Changes
           </Button>
@@ -164,6 +223,18 @@ const AccountSettings = () => {
             color="error"
             onClick={() => setDeleteDialogOpen(true)}
             disabled={!accountId}
+            sx={{
+              px: 5,
+              py: 1.5,
+              fontWeight: 700,
+              fontSize: 16,
+              textTransform: "none",
+              borderWidth: 2,
+              "&:hover": {
+                borderWidth: 2,
+                boxShadow: "0 6px 20px rgba(211,47,47,0.4)",
+              },
+            }}
           >
             Delete Account
           </Button>
@@ -173,15 +244,40 @@ const AccountSettings = () => {
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 3,
+            maxWidth: 400,
+            mx: "auto",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+          },
+        }}
       >
-        <DialogTitle>Confirm Account Deletion</DialogTitle>
-        <DialogContent>
+        <DialogTitle sx={{ fontWeight: 700, color: "error.main" }}>
+          Confirm Account Deletion
+        </DialogTitle>
+        <DialogContent sx={{ fontSize: 16, color: "text.primary" }}>
           Are you sure you want to delete your account? This action cannot be
           undone.
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button color="error" onClick={confirmDelete}>
+        <DialogActions sx={{ pt: 2 }}>
+          <Button onClick={() => setDeleteDialogOpen(false)} sx={{ px: 3 }}>
+            Cancel
+          </Button>
+          <Button
+            color="error"
+            onClick={confirmDelete}
+            sx={{
+              px: 3,
+              fontWeight: 700,
+              textTransform: "none",
+              boxShadow: "0 5px 15px rgba(211,47,47,0.6)",
+              "&:hover": {
+                boxShadow: "0 7px 21px rgba(211,47,47,0.8)",
+              },
+            }}
+          >
             Delete
           </Button>
         </DialogActions>

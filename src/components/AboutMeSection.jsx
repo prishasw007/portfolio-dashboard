@@ -6,9 +6,11 @@ import {
   Button,
   Avatar,
   Stack,
+  Paper,
+  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
-import toast, {Toaster} from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 const AboutMeSection = () => {
   const [aboutText, setAboutText] = useState("");
@@ -28,8 +30,8 @@ const AboutMeSection = () => {
           setPreview(about.logo || null);
         }
       } catch (error) {
-        toast.error("Failed to load AboutMe");
-        console.error("Failed to load AboutMe:", error);
+        toast.error("Failed to load About Me");
+        console.error("Failed to load About Me:", error);
       }
     };
     fetchAbout();
@@ -45,7 +47,7 @@ const AboutMeSection = () => {
     } else {
       setPhoto(null);
       setPreview(null);
-      toast("Please select a valid image file",{
+      toast("Please select a valid image file", {
         icon: "⚠️",
         style: { background: "#fff3cd", color: "#856404" },
       });
@@ -73,6 +75,7 @@ const AboutMeSection = () => {
       setPreview(null);
       setPhoto(null);
       setAboutText(res.data.text);
+      toast.success("Profile photo deleted");
     } catch (error) {
       console.error("Failed to delete photo:", error);
       toast.error("Error deleting profile photo.");
@@ -82,6 +85,10 @@ const AboutMeSection = () => {
   };
 
   const handleSave = async () => {
+    if (!aboutText.trim()) {
+      toast.error("Please write something about yourself.");
+      return;
+    }
     setLoading(true);
     try {
       const formData = new FormData();
@@ -103,10 +110,9 @@ const AboutMeSection = () => {
       }
 
       setAboutText(res.data.text);
-      setPreview(res.data.logo || null); // backend sends 'logo'
+      setPreview(res.data.logo || null);
       setPhoto(null);
       toast.success("About Me info saved successfully!");
-      // alert("About Me info saved successfully!");
     } catch (error) {
       console.error("Error saving About Me info:", error);
       toast.error("Error saving About Me info");
@@ -116,9 +122,23 @@ const AboutMeSection = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 700, p: 3 }}>
-      <Toaster position ="top-right"/>
-      <Typography variant="h4" gutterBottom>
+    <Paper
+      elevation={3}
+      sx={{
+        maxWidth: 700,
+        mx: "auto",
+        p: 4,
+        bgcolor: "#ffffff",
+        borderRadius: 2,
+        border: "1px solid #ddd",
+      }}
+    >
+      <Toaster position="top-right" />
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ fontWeight: 600, color: "primary.main", mb: 4, textAlign: "center" }}
+      >
         About Me
       </Typography>
 
@@ -129,18 +149,29 @@ const AboutMeSection = () => {
         fullWidth
         value={aboutText}
         onChange={(e) => setAboutText(e.target.value)}
-        sx={{ mb: 4 }}
+        sx={{
+          mb: 5,
+          "& .MuiInputBase-root": {
+            bgcolor: "#fafafa",
+          },
+        }}
+        placeholder="Tell us about your background, interests, or anything you'd like to share."
       />
 
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 4 }}>
-        <Button variant="contained" component="label" disabled={loading}>
+      <Stack
+        direction="row"
+        spacing={2}
+        alignItems="center"
+        sx={{ mb: 4, justifyContent: "flex-start" }}
+      >
+        <Button
+          variant="contained"
+          component="label"
+          disabled={loading}
+          sx={{ textTransform: "none", fontWeight: 600 }}
+        >
           Upload Profile Photo
-          <input
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handlePhotoChange}
-          />
+          <input type="file" accept="image/*" hidden onChange={handlePhotoChange} />
         </Button>
 
         {preview && (
@@ -148,29 +179,57 @@ const AboutMeSection = () => {
             <Avatar
               src={preview}
               alt="Profile Preview"
-              sx={{ width: 80, height: 80 }}
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: 2,
+                border: "2px solid #1976d2",
+                bgcolor: "#e3f2fd",
+              }}
+              variant="rounded"
             />
             <Button
               variant="outlined"
               color="error"
               onClick={handleDeletePhoto}
               disabled={loading}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                height: 40,
+                borderColor: "#d32f2f",
+                color: "#d32f2f",
+                ":hover": {
+                  borderColor: "#9a0007",
+                  backgroundColor: "#fcebea",
+                  color: "#9a0007",
+                },
+              }}
             >
-              Delete Photo
+              Delete
             </Button>
           </>
         )}
       </Stack>
 
-      <Button
-        variant="contained"
-        onClick={handleSave}
-        disabled={loading}
-        sx={{ minWidth: 120 }}
-      >
-        {loading ? "Saving..." : "Save Changes"}
-      </Button>
-    </Box>
+      <Box sx={{ textAlign: "center" }}>
+        <Button
+          variant="contained"
+          onClick={handleSave}
+          disabled={loading}
+          sx={{ minWidth: 140, fontWeight: 700, fontSize: 16 }}
+        >
+          {loading ? (
+            <>
+              Saving&nbsp;
+              <CircularProgress size={20} color="inherit" sx={{ ml: 1 }} />
+            </>
+          ) : (
+            "Save Changes"
+          )}
+        </Button>
+      </Box>
+    </Paper>
   );
 };
 
