@@ -1,110 +1,111 @@
-const express = require('express');
+const express = require("express");
+const Experience = require("../models/Experience");
+const upload = require("../middleware/upload");
+const cloudinary = require("../utils/cloudinary");
 const router = express.Router();
-const multer = require('multer');
-const cloudinary = require('../utils/cloudinary');
-const Experience = require('../models/Experience');
-
-// Multer memory storage (upload buffer directly to Cloudinary)
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 
 // GET all experiences
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const experiences = await Experience.find();
     res.json(experiences);
   } catch (err) {
-    console.error('Error fetching experiences:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-//POST expereince
-router.post('/', upload.single('logo'), async (req, res) => {
+// POST new experience with optional logo
+router.post("/", upload.single("logo"), async (req, res) => {
   try {
+    const experience = new Experience({
+      companyName: req.body.companyName,
+      jobTitle: req.body.jobTitle,
+      duration: req.body.duration,
+      location: req.body.location,
+      description: req.body.description,
+      logo: req.file?.path || null,
+      publicId: req.file?.filename || null,
+    });
 
-    let logoUrl = null;
-
-    if (req.file) {
-      const uploadResult = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: 'portfolio/experience-logos' },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        );
-        stream.end(req.file.buffer);
-      });
-
-      logoUrl = uploadResult.secure_url;
-      console.log('Uploaded logo URL:', logoUrl);
-    }
-
-    const experienceData = {
-      ...req.body,
-    };
-    if (logoUrl) experienceData.logo = logoUrl;  // <-- use `logo` here to match schema
-
-    const experience = new Experience(experienceData);
     const savedExperience = await experience.save();
-
-    res.status(201).json(savedExperience);  // response will include the logo field now
+    res.status(201).json(savedExperience);
   } catch (err) {
-    console.error('Error creating experience:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-
-
-// PUT update experience with optional logo upload or remove
-router.put('/:id', upload.single('logo'), async (req, res) => {
+// PUT update experience with optional logo
+router.put("/:id", upload.single("logo"), async (req, res) => {
   try {
     const experience = await Experience.findById(req.params.id);
-    if (!experience) return res.status(404).json({ message: 'Experience not found' });
+    if (!experience)
+      return res.status(404).json({ message: "Experience not found" });
 
-    if (req.body) {
-      // Update text fields if any
-      Object.keys(req.body).forEach((key) => {
-        experience[key] = req.body[key];
-      });
-    }
+    // Update text fields
+    ["companyName", "jobTitle", "duration", "location", "description"].forEach(
+      (key) => {
+        if (req.body[key] !== undefined) experience[key] = req.body[key];
+      }
+    );
 
+    // Update logo if uploaded
     if (req.file) {
-      // Upload new logo if file present
-      const uploadResult = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: 'portfolio/experience-logos' },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        );
-        stream.end(req.file.buffer);
-      });
-      experience.logo = uploadResult.secure_url;
-    } else if (req.body.removeLogo === 'true') {
-      // Remove logo if requested
-      experience.logo = null;
+      // Delete old logo if exists
+      if (experience.publicId) {
+        await cloudinary.uploader.destroy(experience.publicId);
+      }
+      experience.logo = req.file.path;
+      experience.publicId = req.file.filename;
     }
 
     const updatedExperience = await experience.save();
     res.json(updatedExperience);
   } catch (err) {
-    console.error('Error updating experience:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// DELETE experience by id
-router.delete('/:id', async (req, res) => {
+// DELETE experience
+router.delete("/:id", async (req, res) => {
   try {
-    await Experience.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Experience deleted' });
+    const experience = await Experience.findById(req.params.id);
+    if (!experience)
+      return res.status(404).json({ message: "Experience not found" });
+
+    // Delete logo from Cloudinary if exists
+    if (experience.publicId) {
+      await cloudinary.uploader.destroy(experience.publicId);
+    }
+
+    await experience.deleteOne();
+    res.json({ message: "Experience deleted" });
   } catch (err) {
-    console.error('Error deleting experience:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// DELETE only the logo
+router.delete("/:id/logo", async (req, res) => {
+  try {
+    const experience = await Experience.findById(req.params.id);
+    if (!experience)
+      return res.status(404).json({ message: "Experience not found" });
+
+    if (experience.publicId) {
+      await cloudinary.uploader.destroy(experience.publicId);
+      experience.logo = null;
+      experience.publicId = null;
+      await experience.save();
+    }
+
+    res.json({ message: "Logo deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

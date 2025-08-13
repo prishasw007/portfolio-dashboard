@@ -1,12 +1,8 @@
 const express = require("express");
-const router = express.Router();
-const multer = require("multer");
-const cloudinary = require("../utils/cloudinary");
 const Skill = require("../models/Skill");
-
-// Multer memory storage for optional icon upload
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = require("../middleware/upload");
+const cloudinary = require("../utils/cloudinary");
+const router = express.Router();
 
 // GET all skills
 router.get("/", async (req, res) => {
@@ -14,59 +10,93 @@ router.get("/", async (req, res) => {
     const skills = await Skill.find();
     res.json(skills);
   } catch (err) {
-    console.error("Error fetching skills:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-router.post("/", upload.single("icon"), async (req, res) => {
+// POST new skill (optional logo)
+router.post("/", upload.single("logo"), async (req, res) => {
   try {
-    const { category, name, iconName } = req.body;
-    if (!category || !name) {
-      return res
-        .status(400)
-        .json({ message: "Category and name are required" });
-    }
-
-    let logoUrl = null;
-    if (req.file) {
-      const uploadResult = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "portfolio/skills" },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        );
-        stream.end(req.file.buffer);
-      });
-      logoUrl = uploadResult.secure_url;
-    }
-
     const skillData = {
-      category,
-      name,
-      iconName,
+      category: req.body.category,
+      name: req.body.name,
+      iconName: req.body.iconName || null,
+      logoUrl: req.file?.path || null,
+      publicId: req.file?.filename || null,
     };
-    if (logoUrl) skillData.logoUrl = logoUrl;
 
     const skill = new Skill(skillData);
     const savedSkill = await skill.save();
-
     res.status(201).json(savedSkill);
   } catch (err) {
-    console.error("Error creating skill:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// DELETE skill by ID
+// PUT update skill (optional logo)
+router.put("/:id", upload.single("logo"), async (req, res) => {
+  try {
+    const skill = await Skill.findById(req.params.id);
+    if (!skill) return res.status(404).json({ message: "Skill not found" });
+
+    // Update text fields
+    ["category", "name", "iconName"].forEach((key) => {
+      if (req.body[key] !== undefined) skill[key] = req.body[key];
+    });
+
+    // Update logo if uploaded
+    if (req.file) {
+      if (skill.publicId) {
+        await cloudinary.uploader.destroy(skill.publicId);
+      }
+      skill.logoUrl = req.file.path;
+      skill.publicId = req.file.filename;
+    }
+
+    const updatedSkill = await skill.save();
+    res.json(updatedSkill);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// DELETE skill entirely
 router.delete("/:id", async (req, res) => {
   try {
-    await Skill.findByIdAndDelete(req.params.id);
+    const skill = await Skill.findById(req.params.id);
+    if (!skill) return res.status(404).json({ message: "Skill not found" });
+
+    if (skill.publicId) {
+      await cloudinary.uploader.destroy(skill.publicId);
+    }
+
+    await skill.deleteOne();
     res.json({ message: "Skill deleted" });
   } catch (err) {
-    console.error("Error deleting skill:", err);
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// DELETE only the skill logo
+router.delete("/:id/logo", async (req, res) => {
+  try {
+    const skill = await Skill.findById(req.params.id);
+    if (!skill) return res.status(404).json({ message: "Skill not found" });
+
+    if (skill.publicId) {
+      await cloudinary.uploader.destroy(skill.publicId);
+      skill.logoUrl = null;
+      skill.publicId = null;
+      await skill.save();
+    }
+
+    res.json({ message: "Logo deleted successfully" });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });

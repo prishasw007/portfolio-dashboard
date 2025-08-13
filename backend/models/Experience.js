@@ -6,6 +6,7 @@ const experienceSchema = new mongoose.Schema({
   location: { type: String, required: true },
   description: { type: String, required: true },
   logo: { type: String },
+  publicId: {type: String}
 });
 
 module.exports = mongoose.model("Experience", experienceSchema);

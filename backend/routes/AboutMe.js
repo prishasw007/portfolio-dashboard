@@ -1,55 +1,33 @@
 const express = require("express");
-const multer = require("multer");
-const cloudinary = require("../utils/cloudinary");
 const About = require("../models/About");
-
+const upload = require("../middleware/upload");
 const router = express.Router();
+const cloudinary = require("../utils/cloudinary");
 
-// Multer memory storage (upload buffer directly to Cloudinary)
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-// GET all AboutMe entries
+// GET all AboutMe
 router.get("/", async (req, res) => {
   try {
     const aboutList = await About.find();
     res.json(aboutList);
   } catch (err) {
-    console.error("Error fetching AboutMe:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// POST new AboutMe
+// POST new AboutMe with optional photo
 router.post("/", upload.single("photo"), async (req, res) => {
   try {
-    let photoUrl = null;
-
-    if (req.file) {
-      // Upload buffer directly to Cloudinary
-      const uploadResult = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "portfolio/about-me" },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        );
-        stream.end(req.file.buffer);
-      });
-
-      photoUrl = uploadResult.secure_url;
-    }
-
     const about = new About({
       text: req.body.text || "",
-      logo: photoUrl,
+      logo: req.file.path || null,  
+      publicId: req.file.filename
     });
 
     const savedAbout = await about.save();
     res.status(201).json(savedAbout);
   } catch (err) {
-    console.error("Error creating AboutMe:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -60,42 +38,42 @@ router.put("/:id", upload.single("photo"), async (req, res) => {
     const about = await About.findById(req.params.id);
     if (!about) return res.status(404).json({ message: "AboutMe not found" });
 
-    if (req.body.text !== undefined) {
-      about.text = req.body.text;
-    }
+    if (req.body.text !== undefined) about.text = req.body.text;
 
     if (req.file) {
-      const uploadResult = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "portfolio/about-me" },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        );
-        stream.end(req.file.buffer);
-      });
+      // Delete old photo if exists
+      if (about.publicId) {
+        await require("../utils/cloudinary").uploader.destroy(about.publicId);
+      }
 
-      about.logo = uploadResult.secure_url;
-    } else if (req.body.removePhoto === "true") {
-      about.logo = null;
+      about.logo = req.file.path;
+      about.publicId = req.file.filename;
     }
 
     const updatedAbout = await about.save();
     res.json(updatedAbout);
   } catch (err) {
-    console.error("Error updating AboutMe:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// DELETE AboutMe
-router.delete("/:id", async (req, res) => {
+// DELETE profile photo only
+router.delete("/:id/photo", async (req, res) => {
   try {
-    await About.findByIdAndDelete(req.params.id);
-    res.json({ message: "AboutMe deleted" });
+    const about = await About.findById(req.params.id);
+    if (!about) return res.status(404).json({ message: "AboutMe not found" });
+
+    if (about.publicId) {
+      await cloudinary.uploader.destroy(about.publicId);
+      about.logo = null;
+      about.publicId = null;
+      await about.save();
+    }
+
+    res.json({ message: "Profile photo deleted" });
   } catch (err) {
-    console.error("Error deleting AboutMe:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });

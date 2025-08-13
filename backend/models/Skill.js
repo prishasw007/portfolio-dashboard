@@ -5,7 +5,8 @@ const skillSchema = new mongoose.Schema({
   name: { type: String, required: true },
   iconName:{type: String},
   logoUrl: {type: String}, // logos
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  publicId: {type: String}
 });
 
 module.exports = mongoose.model('Skill', skillSchema);
