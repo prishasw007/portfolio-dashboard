@@ -31,7 +31,7 @@ const AboutMeSection = () => {
         }
       } catch (error) {
         toast.error("Failed to load About Me");
-        console.error("Failed to load About Me:", error);
+        console.error(error);
       }
     };
     fetchAbout();
@@ -47,10 +47,7 @@ const AboutMeSection = () => {
     } else {
       setPhoto(null);
       setPreview(null);
-      toast("Please select a valid image file", {
-        icon: "⚠️",
-        style: { background: "#fff3cd", color: "#856404" },
-      });
+      toast("Please select a valid image file", { icon: "⚠️" });
     }
   };
 
@@ -62,22 +59,12 @@ const AboutMeSection = () => {
     }
     try {
       setLoading(true);
-      const formData = new FormData();
-      formData.append("text", aboutText);
-      formData.append("removePhoto", "true");
-
-      const res = await axios.put(
-        `http://localhost:5000/api/AboutMe/${aboutId}`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-
-      setPreview(null);
+      await axios.delete(`http://localhost:5000/api/AboutMe/${aboutId}/photo`);
       setPhoto(null);
-      setAboutText(res.data.text);
+      setPreview(null);
       toast.success("Profile photo deleted");
     } catch (error) {
-      console.error("Failed to delete photo:", error);
+      console.error(error);
       toast.error("Error deleting profile photo.");
     } finally {
       setLoading(false);
@@ -89,6 +76,7 @@ const AboutMeSection = () => {
       toast.error("Please write something about yourself.");
       return;
     }
+
     setLoading(true);
     try {
       const formData = new FormData();
@@ -110,11 +98,14 @@ const AboutMeSection = () => {
       }
 
       setAboutText(res.data.text);
-      setPreview(res.data.logo || null);
+
+      // Update preview from backend logo URL
+      if (res.data.logo) setPreview(res.data.logo);
+
       setPhoto(null);
       toast.success("About Me info saved successfully!");
     } catch (error) {
-      console.error("Error saving About Me info:", error);
+      console.error(error);
       toast.error("Error saving About Me info");
     } finally {
       setLoading(false);
@@ -122,23 +113,9 @@ const AboutMeSection = () => {
   };
 
   return (
-    <Paper
-      elevation={3}
-      sx={{
-        maxWidth: 700,
-        mx: "auto",
-        p: 4,
-        bgcolor: "#ffffff",
-        borderRadius: 2,
-        border: "1px solid #ddd",
-      }}
-    >
+    <Paper elevation={3} sx={{ maxWidth: 700, mx: "auto", p: 4, borderRadius: 2, border: "1px solid #ddd" }}>
       <Toaster position="top-right" />
-      <Typography
-        variant="h4"
-        gutterBottom
-        sx={{ fontWeight: 600, color: "primary.main", mb: 4, textAlign: "center" }}
-      >
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, color: "primary.main", mb: 4, textAlign: "center" }}>
         About Me
       </Typography>
 
@@ -149,29 +126,15 @@ const AboutMeSection = () => {
         fullWidth
         value={aboutText}
         onChange={(e) => setAboutText(e.target.value)}
-        sx={{
-          mb: 5,
-          "& .MuiInputBase-root": {
-            bgcolor: "#fafafa",
-          },
-        }}
+        sx={{ mb: 5, "& .MuiInputBase-root": { bgcolor: "#fafafa" } }}
         placeholder="Tell us about your background, interests, or anything you'd like to share."
       />
 
-      <Stack
-        direction="row"
-        spacing={2}
-        alignItems="center"
-        sx={{ mb: 4, justifyContent: "flex-start" }}
-      >
-        <Button
-          variant="contained"
-          component="label"
-          disabled={loading}
-          sx={{ textTransform: "none", fontWeight: 600 }}
-        >
+      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 4 }}>
+        <Button variant="contained" component="label" disabled={loading} sx={{ textTransform: "none", fontWeight: 600 }}>
           Upload Profile Photo
-          <input type="file" accept="image/*" hidden onChange={handlePhotoChange} />
+          {/* Important: add name="photo" for Multer */}
+          <input type="file" name="photo" accept="image/*" hidden onChange={handlePhotoChange} />
         </Button>
 
         {preview && (
@@ -179,13 +142,7 @@ const AboutMeSection = () => {
             <Avatar
               src={preview}
               alt="Profile Preview"
-              sx={{
-                width: 80,
-                height: 80,
-                borderRadius: 2,
-                border: "2px solid #1976d2",
-                bgcolor: "#e3f2fd",
-              }}
+              sx={{ width: 80, height: 80, borderRadius: 2, border: "2px solid #1976d2", bgcolor: "#e3f2fd" }}
               variant="rounded"
             />
             <Button
@@ -193,18 +150,8 @@ const AboutMeSection = () => {
               color="error"
               onClick={handleDeletePhoto}
               disabled={loading}
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                height: 40,
-                borderColor: "#d32f2f",
-                color: "#d32f2f",
-                ":hover": {
-                  borderColor: "#9a0007",
-                  backgroundColor: "#fcebea",
-                  color: "#9a0007",
-                },
-              }}
+              sx={{ textTransform: "none", fontWeight: 600, height: 40, borderColor: "#d32f2f", color: "#d32f2f",
+                    ":hover": { borderColor: "#9a0007", backgroundColor: "#fcebea", color: "#9a0007" } }}
             >
               Delete
             </Button>
@@ -213,17 +160,9 @@ const AboutMeSection = () => {
       </Stack>
 
       <Box sx={{ textAlign: "center" }}>
-        <Button
-          variant="contained"
-          onClick={handleSave}
-          disabled={loading}
-          sx={{ minWidth: 140, fontWeight: 700, fontSize: 16 }}
-        >
+        <Button variant="contained" onClick={handleSave} disabled={loading} sx={{ minWidth: 140, fontWeight: 700, fontSize: 16 }}>
           {loading ? (
-            <>
-              Saving&nbsp;
-              <CircularProgress size={20} color="inherit" sx={{ ml: 1 }} />
-            </>
+            <>Saving&nbsp;<CircularProgress size={20} color="inherit" sx={{ ml: 1 }} /></>
           ) : (
             "Save Changes"
           )}

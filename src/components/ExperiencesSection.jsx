@@ -24,7 +24,6 @@ const ExperienceSection = () => {
     description: "",
     logo: null, // File object for new upload
   });
-
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInputRef = useRef();
 
@@ -36,19 +35,20 @@ const ExperienceSection = () => {
     duration: "",
     location: "",
     description: "",
-    logo: null, // This can be a URL string or a File object while editing
+    logo: null, // URL string or File object
   });
   const [editPreviewUrl, setEditPreviewUrl] = useState(null);
   const editFileInputRef = useRef();
 
   // Fetch experiences on mount
   useEffect(() => {
-    axios.get("http://localhost:5000/api/Experiences").then((res) => {
-      setExperiences(res.data);
-    });
+    axios
+      .get("http://localhost:5000/api/Experiences")
+      .then((res) => setExperiences(res.data))
+      .catch((err) => console.error("Failed to fetch experiences", err));
   }, []);
 
-  // Handlers for new experience inputs
+  // --- Handlers for new experience inputs ---
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewExperience((prev) => ({ ...prev, [name]: value }));
@@ -57,27 +57,33 @@ const ExperienceSection = () => {
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     setNewExperience((prev) => ({ ...prev, logo: file }));
     setPreviewUrl(URL.createObjectURL(file));
   };
 
   const clearLogoInput = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const removeLogo = () => {
+  // Delete logo before upload or after upload
+  const removeLogo = async () => {
+    if (
+      newExperience._id &&
+      newExperience.logo &&
+      typeof newExperience.logo === "string"
+    ) {
+      await deleteLogoFromCloudinary(newExperience._id);
+    }
     setNewExperience((prev) => ({ ...prev, logo: null }));
     setPreviewUrl(null);
     clearLogoInput();
   };
 
-  // Add new experience
+  // --- Add new experience ---
   const addExperience = async () => {
     const { companyName, jobTitle, duration, location, description, logo } =
       newExperience;
+
     if (!companyName.trim() || !jobTitle.trim()) {
       toast("Company name and job title are required.", {
         icon: "⚠️",
@@ -93,10 +99,7 @@ const ExperienceSection = () => {
       formData.append("duration", duration);
       formData.append("location", location);
       formData.append("description", description);
-
-      if (logo) {
-        formData.append("logo", logo);
-      }
+      if (logo) formData.append("logo", logo);
 
       const res = await axios.post(
         "http://localhost:5000/api/Experiences",
@@ -117,26 +120,48 @@ const ExperienceSection = () => {
       });
       setPreviewUrl(null);
       clearLogoInput();
+      toast.success("Experience added successfully!")
     } catch (error) {
       console.error("Failed to add experience", error);
       toast.error("Failed to add experience");
-      // alert("Failed to add experience");
     }
   };
 
-  // Delete experience
+  // --- Delete experience ---
   const deleteExperience = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/api/Experiences/${id}`);
       setExperiences((prev) => prev.filter((exp) => exp._id !== id));
+      toast.success("Experience deleted!");
     } catch (error) {
       console.error("Failed to delete experience", error);
       toast.error("Failed to delete experience");
-      // alert("Failed to delete experience");
     }
   };
 
-  // Edit mode handlers
+  // --- Delete logo from Cloudinary ---
+  const deleteLogoFromCloudinary = async (id, isEdit = false) => {
+    try {
+      const res = await axios.delete(
+        `http://localhost:5000/api/Experiences/${id}/logo`
+      );
+      toast.success("Logo deleted successfully!");
+
+      if (isEdit) {
+        setEditExperience((prev) => ({ ...prev, logo: null }));
+        setEditPreviewUrl(null);
+      } else {
+        setExperiences((prev) =>
+          prev.map((exp) => (exp._id === id ? { ...exp, logo: null } : exp))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to delete logo", err);
+      toast.error("Failed to delete logo");
+    }
+  };
+
+  // --- Edit mode handlers ---
   const startEditing = (exp) => {
     setEditingId(exp._id);
     setEditExperience({
@@ -145,7 +170,7 @@ const ExperienceSection = () => {
       duration: exp.duration || "",
       location: exp.location || "",
       description: exp.description || "",
-      logo: exp.logo || null, // string URL or null
+      logo: exp.logo || null,
     });
     setEditPreviewUrl(exp.logo || null);
   };
@@ -163,18 +188,24 @@ const ExperienceSection = () => {
   };
 
   const clearEditLogoInput = () => {
-    if (editFileInputRef.current) {
-      editFileInputRef.current.value = "";
-    }
+    if (editFileInputRef.current) editFileInputRef.current.value = "";
   };
 
   const removeEditLogo = () => {
-    setEditExperience((prev) => ({ ...prev, logo: null }));
-    setEditPreviewUrl(null);
+    if (
+      editingId &&
+      editExperience.logo &&
+      typeof editExperience.logo === "string"
+    ) {
+      deleteLogoFromCloudinary(editingId, true);
+    } else {
+      setEditExperience((prev) => ({ ...prev, logo: null }));
+      setEditPreviewUrl(null);
+    }
     clearEditLogoInput();
   };
 
-  // Update experience
+  // --- Update experience ---
   const updateExperience = async () => {
     const { companyName, jobTitle, duration, location, description, logo } =
       editExperience;
@@ -185,7 +216,6 @@ const ExperienceSection = () => {
         style: { background: "#fff3cd", color: "#856404" },
       });
       return;
-      // return alert("Company name and job title are required.");
     }
 
     try {
@@ -196,7 +226,6 @@ const ExperienceSection = () => {
       formData.append("location", location);
       formData.append("description", description);
 
-      // Append logo only if it's a File (new upload), skip if it's URL string (existing)
       if (logo && typeof logo !== "string") {
         formData.append("logo", logo);
       }
@@ -204,9 +233,7 @@ const ExperienceSection = () => {
       const res = await axios.put(
         `http://localhost:5000/api/Experiences/${editingId}`,
         formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
 
       setExperiences((prev) =>
@@ -216,7 +243,6 @@ const ExperienceSection = () => {
     } catch (error) {
       console.error("Failed to update experience", error);
       toast.error("Failed to update experience");
-      // alert("Failed to update experience");
     }
   };
 
@@ -407,7 +433,6 @@ const ExperienceSection = () => {
               onChange={handleChange}
               fullWidth
               multiline
-              
               placeholder="Brief description"
               sx={{
                 "& .MuiInputLabel-root": { fontWeight: 600 },
