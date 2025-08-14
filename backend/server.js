@@ -6,7 +6,7 @@ require("dotenv").config();
 const app = express();
 app.use(
   cors({
-    origin: ["http://localhost:3000","http://localhost:5173", "https://prishaswaroop.netlify.app", "http://localhost:5174"],
+    origin: ["http://localhost:3000","http://localhost:5173", "https://prishaswaroop.netlify.app","https://prishadashboard.netlify.app"],
     credentials: true,
   })
 );
