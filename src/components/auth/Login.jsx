@@ -20,6 +20,7 @@ const Login = ({ onLogin }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!email || !password) return;
     onLogin(email, password);
   };
 

@@ -11,12 +11,19 @@ const LoginPage = () => {
       const response = await fetch("http://localhost:5000/api/Auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // important for cookies
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 
       if (response.ok) {
-        navigate("/dashboard");
+        // Optional: get role from server
+        const data = await response.json();
+
+        if (data.role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
         toast.error("Login failed. Please check your credentials.");
       }
