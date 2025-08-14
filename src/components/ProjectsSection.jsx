@@ -61,10 +61,7 @@ const ProjectsSection = () => {
       return;
     }
 
-    const res = await axios.post(
-      `${API_BASE}/api/Projects`,
-      newProject
-    );
+    const res = await axios.post(`${API_BASE}/api/Projects`, newProject);
     setProjects((prev) => [...prev, res.data]);
     setNewProject({
       title: "",
@@ -78,8 +75,14 @@ const ProjectsSection = () => {
 
   // Delete project (DELETE request)
   const deleteProject = async (id) => {
-    await axios.delete(`${API_BASE}/api/Projects/${id}`);
-    setProjects((prev) => prev.filter((project) => project._id !== id));
+    try {
+      await axios.delete(`${API_BASE}/api/Projects/${id}`);
+      setProjects((prev) => prev.filter((project) => project._id !== id));
+      toast.success("Project deleted successfully!");
+    } catch (error) {
+      console.error("Failed to delete experience", error);
+      toast.error("Failed to delete experience");
+    }
   };
 
   // Handle edit form changes
@@ -124,6 +127,7 @@ const ProjectsSection = () => {
         prev.map((project) => (project._id === editingId ? res.data : project))
       );
       cancelEditing();
+      toast.success("Project updated successfully!");
     } catch (error) {
       console.error("Failed to update project:", error);
       toast.error("Failed to update project.");

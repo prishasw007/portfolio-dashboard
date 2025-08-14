@@ -133,7 +133,7 @@ const ExperienceSection = () => {
     try {
       await axios.delete(`${API_BASE}/api/Experiences/${id}`);
       setExperiences((prev) => prev.filter((exp) => exp._id !== id));
-      toast.success("Experience deleted!");
+      toast.success("Experience deleted successfully!");
     } catch (error) {
       console.error("Failed to delete experience", error);
       toast.error("Failed to delete experience");

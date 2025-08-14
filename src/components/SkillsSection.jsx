@@ -68,7 +68,7 @@ const SkillsSection = () => {
 
   // Fetch skills
   useEffect(() => {
-    axios.get("${API_BASE}/api/Skills")
+    axios.get(`${API_BASE}/api/Skills`)
       .then((res) => {
         const grouped = {
           Languages: [],
@@ -113,7 +113,7 @@ const SkillsSection = () => {
       formData.append("iconName", iconName);
       if (logoFile) formData.append("logo", logoFile); // must match backend multer field
 
-      const res = await axios.post("${API_BASE}/api/Skills", formData, {
+      const res = await axios.post(`${API_BASE}/api/Skills`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
