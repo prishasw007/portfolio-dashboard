@@ -137,7 +137,7 @@ const Login = ({ onLogin }) => {
         </Button>
 
         {/* Optional: Forgot Password Link */}
-        <Box sx={{ mt: 3, textAlign: "center" }}>
+        {/* <Box sx={{ mt: 3, textAlign: "center" }}>
           <Link
             href="/forgot-password"
             underline="hover"
@@ -150,7 +150,7 @@ const Login = ({ onLogin }) => {
           >
             Forgot Password?
           </Link>
-        </Box>
+        </Box> */}
       </Paper>
     </Box>
   );

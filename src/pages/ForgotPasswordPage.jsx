@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Box, Paper, Typography, TextField, Button, Link } from "@mui/material";
+import {
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Link,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+} from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
 const ForgotPasswordPage = () => {
@@ -11,53 +20,104 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <Box className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <Box
+      sx={{
+        minHeight: "100vh",
+        minWidth: "100vw",
+        margin: 0,
+        padding: 0,
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 3,
+      }}
+    >
       <Paper
-        elevation={3}
         component="form"
         onSubmit={handleSubmit}
-        className="w-full rounded shadow bg-white"
+        elevation={6}
         sx={{
-          maxWidth: 700,
-          px: 6,
-          py: 8,
+          maxWidth: 400,
+          width: "100%",
+          p: 5,
+          borderRadius: 3,
+          boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+          bgcolor: "background.paper",
         }}
       >
-        <Typography variant="h5" component="h1" className="text-center" sx={{ fontWeight: 'bold', mt: 3 }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          sx={{
+            fontWeight: "700",
+            mb: 4,
+            color: "primary.main",
+            textAlign: "center",
+            letterSpacing: 1,
+          }}
+        >
           Forgot Password
         </Typography>
 
-        <Typography className="text-center" sx ={{mb: 4}}>
+        <Typography
+          sx={{
+            mb: 4,
+            textAlign: "center",
+            color: "text.secondary",
+          }}
+        >
           Enter your email address below. We'll send you a link to reset your password.
         </Typography>
 
-        <TextField
-          label="Email"
-          variant="outlined"
-          fullWidth
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          sx={{ mb: 5 }}
-        />
+        {/* Email Field */}
+        <FormControl fullWidth required sx={{ mb: 4 }} variant="outlined">
+          <InputLabel htmlFor="email">Email</InputLabel>
+          <OutlinedInput
+            id="email"
+            type="email"
+            label="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            sx={{
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "primary.main",
+              },
+            }}
+          />
+        </FormControl>
 
+        {/* Submit Button */}
         <Button
           type="submit"
           variant="contained"
           fullWidth
-          className="bg-blue-600 hover:bg-blue-700 font-medium text-white"
-          sx={{ py: 2.5 }}
+          sx={{
+            py: 2.5,
+            fontWeight: "bold",
+            fontSize: "1rem",
+            backgroundColor: "primary.main",
+            "&:hover": {
+              backgroundColor: "primary.dark",
+            },
+            boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
+            transition: "all 0.3s ease",
+          }}
         >
           Send Reset Link
         </Button>
 
-        <Box className="text-center" sx={{ mt: 3 }}>
+        {/* Back to Login */}
+        <Box sx={{ mt: 3, textAlign: "center" }}>
           <Link
             component={RouterLink}
             to="/login"
-            className="text-blue-600 hover:text-blue-800 font-medium"
+            sx={{
+              color: "primary.light",
+              fontWeight: 500,
+              "&:hover": { color: "primary.main" },
+            }}
           >
             Back to Login
           </Link>
