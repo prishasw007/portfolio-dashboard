@@ -16,6 +16,8 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import toast, { Toaster } from "react-hot-toast";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 // Import all react-icons
 import * as FaIcons from "react-icons/fa";
 import * as SiIcons from "react-icons/si";
@@ -66,7 +68,7 @@ const SkillsSection = () => {
 
   // Fetch skills
   useEffect(() => {
-    axios.get("http://localhost:5000/api/Skills")
+    axios.get("${API_BASE}/api/Skills")
       .then((res) => {
         const grouped = {
           Languages: [],
@@ -111,7 +113,7 @@ const SkillsSection = () => {
       formData.append("iconName", iconName);
       if (logoFile) formData.append("logo", logoFile); // must match backend multer field
 
-      const res = await axios.post("http://localhost:5000/api/Skills", formData, {
+      const res = await axios.post("${API_BASE}/api/Skills", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -130,7 +132,7 @@ const SkillsSection = () => {
 
   const deleteSkill = async (category, id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/Skills/${id}`);
+      await axios.delete(`${API_BASE}/api/Skills/${id}`);
       setSkills((prev) => ({
         ...prev,
         [category]: prev[category].filter((skill) => skill._id !== id),
@@ -145,7 +147,7 @@ const SkillsSection = () => {
   const deleteSkillLogo = async (category, skill) => {
     if (!skill.publicId) return;
     try {
-      await axios.delete(`http://localhost:5000/api/Skills/${skill._id}/logo`);
+      await axios.delete(`${API_BASE}/api/Skills/${skill._id}/logo`);
       setSkills((prev) => ({
         ...prev,
         [category]: prev[category].map((s) =>

@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import toast, { Toaster } from "react-hot-toast";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const ProjectsSection = () => {
   const [projects, setProjects] = useState([]);
@@ -38,7 +39,7 @@ const ProjectsSection = () => {
 
   // Fetch projects from backend on mount
   useEffect(() => {
-    axios.get("http://localhost:5000/api/Projects").then((res) => {
+    axios.get(`${API_BASE}/api/Projects`).then((res) => {
       setProjects(res.data);
     });
   }, []);
@@ -61,7 +62,7 @@ const ProjectsSection = () => {
     }
 
     const res = await axios.post(
-      "http://localhost:5000/api/Projects",
+      `${API_BASE}/api/Projects`,
       newProject
     );
     setProjects((prev) => [...prev, res.data]);
@@ -77,7 +78,7 @@ const ProjectsSection = () => {
 
   // Delete project (DELETE request)
   const deleteProject = async (id) => {
-    await axios.delete(`http://localhost:5000/api/Projects/${id}`);
+    await axios.delete(`${API_BASE}/api/Projects/${id}`);
     setProjects((prev) => prev.filter((project) => project._id !== id));
   };
 
@@ -115,7 +116,7 @@ const ProjectsSection = () => {
   const updateProject = async () => {
     try {
       const res = await axios.put(
-        `http://localhost:5000/api/Projects/${editingId}`,
+        `${API_BASE}/api/Projects/${editingId}`,
         editForm
       );
 

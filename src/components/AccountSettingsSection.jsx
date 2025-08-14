@@ -13,6 +13,8 @@ import {
 } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const AccountSettings = () => {
   const [accountId, setAccountId] = useState(null); // store _id for update/delete
   const [name, setName] = useState("");
@@ -28,7 +30,7 @@ const AccountSettings = () => {
     const fetchSettings = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5000/api/AccountSettings"
+          `${API_BASE}/api/AccountSettings`
         ); // fetch all settings
         if (res.data.length > 0) {
           const data = res.data[0]; // get first item
@@ -67,7 +69,7 @@ const AccountSettings = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/AccountSettings/${accountId}`,
+        `${API_BASE}/api/AccountSettings/${accountId}`,
         payload
       );
       toast.success("Settings saved!");
@@ -91,7 +93,7 @@ const AccountSettings = () => {
 
     try {
       await axios.delete(
-        `http://localhost:5000/api/AccountSettings/${accountId}`
+        `${API_BASE}/api/AccountSettings/${accountId}`
       );
       toast.success("Account deleted");
       // alert("Account deleted.");

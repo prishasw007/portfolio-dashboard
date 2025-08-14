@@ -12,6 +12,8 @@ import {
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const AboutMeSection = () => {
   const [aboutText, setAboutText] = useState("");
   const [photo, setPhoto] = useState(null);
@@ -22,7 +24,7 @@ const AboutMeSection = () => {
   useEffect(() => {
     const fetchAbout = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/AboutMe");
+        const res = await axios.get(`${API_BASE}/api/AboutMe`);
         if (res.data.length > 0) {
           const about = res.data[0];
           setAboutId(about._id);
@@ -59,7 +61,7 @@ const AboutMeSection = () => {
     }
     try {
       setLoading(true);
-      await axios.delete(`http://localhost:5000/api/AboutMe/${aboutId}/photo`);
+      await axios.delete(`${API_BASE}/api/AboutMe/${aboutId}/photo`);
       setPhoto(null);
       setPreview(null);
       toast.success("Profile photo deleted");
@@ -86,12 +88,12 @@ const AboutMeSection = () => {
       let res;
       if (aboutId) {
         res = await axios.put(
-          `http://localhost:5000/api/AboutMe/${aboutId}`,
+          `${API_BASE}/api/AboutMe/${aboutId}`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
       } else {
-        res = await axios.post("http://localhost:5000/api/AboutMe", formData, {
+        res = await axios.post(`${API_BASE}/api/AboutMe`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         setAboutId(res.data._id);

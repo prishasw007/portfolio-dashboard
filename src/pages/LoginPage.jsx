@@ -2,13 +2,13 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import Login from "../components/auth/Login";
 import toast from "react-hot-toast";
-
+const API_BASE = import.meta.env.VITE_API_URL;
 const LoginPage = () => {
   const navigate = useNavigate();
 
   const onLogin = async (email, password) => {
     try {
-      const response = await fetch("http://localhost:5000/api/Auth", {
+      const response = await fetch(`${API_BASE}/api/Auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

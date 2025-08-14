@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import toast, { Toaster } from "react-hot-toast";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const ExperienceSection = () => {
   const [experiences, setExperiences] = useState([]);
@@ -43,7 +44,7 @@ const ExperienceSection = () => {
   // Fetch experiences on mount
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/Experiences")
+      .get(`${API_BASE}/api/Experiences`)
       .then((res) => setExperiences(res.data))
       .catch((err) => console.error("Failed to fetch experiences", err));
   }, []);
@@ -102,7 +103,7 @@ const ExperienceSection = () => {
       if (logo) formData.append("logo", logo);
 
       const res = await axios.post(
-        "http://localhost:5000/api/Experiences",
+        `${API_BASE}/api/Experiences`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -130,7 +131,7 @@ const ExperienceSection = () => {
   // --- Delete experience ---
   const deleteExperience = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/Experiences/${id}`);
+      await axios.delete(`${API_BASE}/api/Experiences/${id}`);
       setExperiences((prev) => prev.filter((exp) => exp._id !== id));
       toast.success("Experience deleted!");
     } catch (error) {
@@ -143,7 +144,7 @@ const ExperienceSection = () => {
   const deleteLogoFromCloudinary = async (id, isEdit = false) => {
     try {
       const res = await axios.delete(
-        `http://localhost:5000/api/Experiences/${id}/logo`
+        `${API_BASE}/api/Experiences/${id}/logo`
       );
       toast.success("Logo deleted successfully!");
 
@@ -231,7 +232,7 @@ const ExperienceSection = () => {
       }
 
       const res = await axios.put(
-        `http://localhost:5000/api/Experiences/${editingId}`,
+        `${API_BASE}/api/Experiences/${editingId}`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

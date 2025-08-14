@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const ContactMessagesSection = () => {
   const [messages, setMessages] = useState([]);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
@@ -22,7 +24,7 @@ const ContactMessagesSection = () => {
     const fetchMessages = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5000/api/ContactMessages"
+          `${API_BASE}/api/ContactMessages`
         );
         setMessages(res.data);
       } catch (error) {
@@ -35,7 +37,7 @@ const ContactMessagesSection = () => {
 
   const deleteMessage = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/ContactMessages/${id}`);
+      await axios.delete(`${API_BASE}/api/ContactMessages/${id}`);
       setMessages((prev) => prev.filter((msg) => msg._id !== id));
       if (selectedMessageId === id) {
         setSelectedMessageId(null);
